@@ -7,8 +7,8 @@
 
 const cpqdApiController = require("./cpqdApiController.js");
 const ConversationV1 = require("watson-developer-cloud/conversation/v1");
-const TextToSpeechV1 = require('watson-developer-cloud/text-to-speech/v1');
-const fs = require('fs');
+const TextToSpeechV1 = require("watson-developer-cloud/text-to-speech/v1");
+const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 
@@ -21,8 +21,8 @@ const conversation = new ConversationV1({
 });
 //Set up text to speech service wrapper
 var text_to_speech = new TextToSpeechV1({
-    username: 'f1e10a38-39bb-426f-a402-d278502792e6',
-    password: 'HJctMn0kjkwQ'
+    username: "f1e10a38-39bb-426f-a402-d278502792e6",
+    password: "HJctMn0kjkwQ"
 });
 
 
@@ -51,8 +51,11 @@ conversation.message({}, (err, response) => {
 });
 
 function hashCode(text) {
+
     var hash = 0, i, chr;
+
     if (text.length === 0) return hash;
+
     for (i = 0; i < text.length; i++) {
         chr = text.charCodeAt(i);
         hash = ((hash << 5) - hash) + chr;
@@ -60,7 +63,7 @@ function hashCode(text) {
     }
 
     return Math.abs(hash);
-};
+}
 
 function message(text, context) {
 
@@ -107,7 +110,7 @@ function hash(text) {
 function watsonTextToSpeech(text, fileName) {
 
     return new Promise((resolve, reject) => {
-        
+
         if (!text)
             reject("Text is not defined");
 
@@ -116,59 +119,146 @@ function watsonTextToSpeech(text, fileName) {
 
         var params = {
             text: text,
-            voice: 'pt-BR_IsabelaVoice',
-            accept: 'audio/wav'
+            voice: "pt-BR_IsabelaVoice",
+            accept: "audio/wav"
         };
 
         // Pipe the synthesized text to a file.
         var stream = text_to_speech.synthesize(params)
-            .on('error', function (error) {
-                console.log('Error:', error);
+            .on("error", function (error) {
+                console.log("Error:", error);
                 reject(error);
             }).pipe(fs.createWriteStream(fileName))
-            .on('finish', () => {
+            .on("finish", () => {
                 resolve(fileName);
             });
     });
 
 }
 
+var hashedAudioFiles = [];
 
+var dirName = path.join(__dirname, "../audio/preprocessed/");
+
+function storeHashedFilesInMemory() {
+
+    var promiseArray = [];
+
+    return new Promise((resolve, reject) => {
+        fs.readdir(dirName, (err, files) => {
+            if (err) {
+                reject(err);
+            } else {
+
+                files.forEach(file => {
+
+                    let promise = new Promise((resolve, reject) => {
+                        fs.readFile(dirName + file, (err, data) => {
+                            if (err) {
+                                console.log(err);
+                                reject(err);
+                            } else {
+
+                                resolve({
+                                    fileName: file,
+                                    data: data
+                                });
+                            }
+
+                        });
+                    });
+                    promiseArray.push(promise);
+
+                });
+
+                Promise.all(promiseArray)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(error => {
+                        reject(error);
+                    });
+            }
+        });
+    });
+
+}
+
+storeHashedFilesInMemory()
+    .then(result => {
+        hashedAudioFiles = result;
+    })
+    .catch(error => {
+        console.log("error while storing hashed files in memory");
+        console.log(error);
+    });
 
 function textToSpeech(text) {
 
     return new Promise((resolve, reject) => {
-
+        //Create a new hash from text
         let hash = hashCode(text);
         let filePath = path.join(__dirname, "../audio/preprocessed/" + hash + ".wav");
+        //used to match hash with file name
+        hash = hash + ".wav";
 
-        fs.readFile(filePath, (err, data) => {
+        let found = hashedAudioFiles.filter(hashedAudioFile => {
 
-            if (err) {
-
-                //file not found, so let's download it create a hash and store
-                if (err.errno  == -2) {
-                    console.log(text);
-                    console.log("Creating hash...");
-                    watsonTextToSpeech(text, filePath)
-                        .then(audioFilePath => {
-                            resolve(audioFilePath);
-                        }).catch(error => {
-                            reject(error);
-                        });
-                } else {
-
-                    console.log(err);
-                }
-            } else {
-                console.log("File already hashed");
-                watsonTextToSpeech(text, filePath)
-                    .then(audioFilePath => {
-                        resolve(audioFilePath);
-                    });
-            }
+            return hashedAudioFile.fileName === hash;
 
         });
+
+        if (found.length) {
+
+            console.log("File already hashed");
+
+            resolve(found[0].data);
+        } else {
+            watsonTextToSpeech(text, filePath)
+                .then(audioFilePath => {
+
+                    fs.readFile(audioFilePath, (err, data) => {
+                        if (err)
+                            reject(err);
+                        else
+                            resolve(data);
+                    });
+
+                }).catch(error => {
+                    reject(error);
+                });
+            console.log("hashNotFound");
+        }
+
+
+
+        // fs.readFile(filePath, (err, data) => {
+
+        //     if (err) {
+
+        //         //file not found, so let's download it create a hash and store
+        //         if (err.errno  == -2) {
+        //             console.log(text);
+        //             console.log("Creating hash...");
+        //             watsonTextToSpeech(text, filePath)
+        //                 .then(audioFilePath => {
+        //                     resolve(audioFilePath);
+        //                 }).catch(error => {
+        //                     reject(error);
+        //                 });
+        //         } else {
+
+        //             console.log(err);
+        //         }
+        //     } else {
+        //         console.log("File already hashed");
+        //         watsonTextToSpeech(text, filePath)
+        //             .then(audioFilePath => {
+        //                 resolve(audioFilePath);
+        //             });
+        //     }
+
+        // });
 
     });
 

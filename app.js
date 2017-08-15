@@ -43,8 +43,6 @@ var stopWatch;
 
 var context;
 
-
-
 function endStream() {
 	return new Promise((resolve, reject) => {
 		stopWatch = new Date().getTime();
@@ -55,7 +53,7 @@ function endStream() {
 			spawn
 		} = require("child_process");
 
-		const deploySh = spawn("ffmpeg", ["-y", "-i", "./audio/demo.wav", "-ar", "8000", "-acodec", "pcm_s16le", "-ac", "1", "./audio/audio_convertido.wav"], {});
+		const deploySh = spawn("ffmpeg", ["-y", "-i", "./audio/audio_original.wav", "-ar", "8000", "-acodec", "pcm_s16le", "-ac", "1", "./audio/audio_convertido.wav"], {});
 
 		let output = "";
 		deploySh.stdout.on("data", (data) => {
@@ -86,6 +84,10 @@ function endStream() {
 
 }
 
+function sendWatsonGreeting() {
+
+}
+
 console.log("server open on port " + port);
 
 var binaryServer = BinaryServer({ port: 9001 });
@@ -95,13 +97,20 @@ binaryServer.on("connection", function (client) {
 	console.log("new connection");
 
 	//when client connects, send him the greeting message from Watson Conversation
-	client.send(fs.createReadStream(conversation.watsonGreetingAudioPath));
+	// client.send(fs.createReadStream(conversation.watsonGreetingAudioPath));
 
 	conversation.message("")
 		.then(result => {
-
 			context = result.context;
-		});
+			return result;
+		})
+		.then(result => {
+			return conversation.textToSpeech(result.output.text[0]);
+		})
+		.then(result => {
+			console.log("buffer sent to client");
+			client.send(result);
+		})
 
 	client.on("stream", function (stream, meta) {
 		console.log("new stream");
@@ -128,7 +137,8 @@ binaryServer.on("connection", function (client) {
 				.then(userInput => {
 					elapsedTime = new Date().getTime() - stopWatch;
 					console.log();
-					console.log("Parsed speech in", elapsedTime, "ms");
+					console.log("Parsed speech to text in", elapsedTime, "ms");
+					console.log("User input: ", userInput);
 					stopWatch = new Date().getTime();
 
 					return conversation.message(userInput, context);
@@ -143,14 +153,16 @@ binaryServer.on("connection", function (client) {
 
 					return conversation.textToSpeech(watsonResponse.output.text[0]);
 				})
-				.then(audioFilePath => {
+				.then(audioFile => {
+
 					elapsedTime = new Date().getTime() - stopWatch;
 					let totalElapsedTime = new Date().getTime() - start;
 					console.log();
 					console.log("Speech generated in", elapsedTime, "ms");
-					
+
 					console.log("totalElapsedTime:", totalElapsedTime);
-					client.send(fs.createReadStream(audioFilePath));
+
+					client.send(audioFile);
 				})
 				.catch(error => {
 					console.log(error);

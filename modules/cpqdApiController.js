@@ -13,11 +13,8 @@ const request = require("request"),
 
 var parseXML = require("xml2js").parseString;
 
-var hashedAudioFiles = [];
 
-fs.readdir(path.join(__dirname, "../audio/preprocessed/"),files => {
-	console.log(files);
-});
+
 
 /**
  * Transforms text in speech and saves to file
