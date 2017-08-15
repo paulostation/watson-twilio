@@ -6,4 +6,7 @@ html
     body
         button(onclick="startRecording()") Start Recording
         button(onclick="stopRecording()") Stop Recording
+        audio(id='player', controls='', autoplay='', style='display: none;')
+            source(src='screamer.wav', type='audio/mpeg')
         script(src="recorder.js")
+        

@@ -11,7 +11,9 @@
     "jade": "latest",
     "lame": "^1.2.4",
     "request": "^2.81.0",
-    "wav": "latest"
+    "watson-developer-cloud": "^2.37.0",
+    "wav": "latest",
+    "xml2js": "^0.4.17"
   },
   "author": "gabrielpoca"
 }

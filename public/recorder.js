@@ -32,7 +32,7 @@
       // the sample rate is in context.sampleRate
       audioInput = context.createMediaStreamSource(e);
 
-      var bufferSize = 2048;
+      var bufferSize = 4096;
       recorder = context.createScriptProcessor(bufferSize, 1, 1);
 
       recorder.onaudioprocess = function(e){
@@ -56,4 +56,40 @@
       return buf.buffer
     }
   });
+
+var audio = document.getElementById('player');
+console.log(audio);
+  client.on('stream', function(stream, meta){    
+      // Buffer for parts
+      var parts = [];
+      // Got new data
+      stream.on('data', function(data){
+        // console.log(data);
+        parts.push(data);
+      });
+      stream.on('end', function(){
+        // Display new data in browser!
+        console.log(parts);
+        
+
+        
+        audio.src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
+        console.log(audio.src);
+        audio.play();
+      });
+    });
+
 })(this);
+
+
+// var audio = document.getElementById('player');
+// ss(socket).on('audio-stream', function(stream, data) {
+    // parts = [];
+    // stream.on('data', function(chunk){
+        // parts.push(chunk);
+    // });
+    // stream.on('end', function () {
+        // audio.src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
+        // audio.play();
+    // });
+// });
