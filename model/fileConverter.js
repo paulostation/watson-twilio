@@ -9,9 +9,7 @@ const winston = require("../bin/logger.js"),
 function resampleTo8KHz(filename) {
 
 	return new Promise((resolve, reject) => {
-		stopWatch = new Date().getTime();
-
-
+		
 		const {
 			spawn
 		} = require("child_process");
@@ -33,7 +31,8 @@ function resampleTo8KHz(filename) {
 		});
 
 		deploySh.on("close", (statusCode) => {
-			
+
+			winston.debug(stdout);
 
 			if (statusCode === 0) {
 

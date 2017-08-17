@@ -17,18 +17,16 @@ function init() {
 				return cpqdAPI.textToSpeech(response.output.text[0]);
 			})
 			.then(audioBuffer => {
-				console.log(Buffer.isBuffer(audioBuffer));
 				module.exports.greetingMessage = audioBuffer;
-				resolve(true);
 			})
-			.then(() => {				
+			.then(() => {
 				return getHashedFiles(path.join(__dirname, "../audio/preprocessed/"));
 			})
 			.then(result => {
 				hashedAudioFiles = result;
+				resolve(true);
 			})
 			.catch(error => {
-				console.log(error)
 				reject(error);
 			});
 	});
@@ -51,37 +49,76 @@ function hashCode(text) {
 
 function textToSpeech(text) {
 
-	//Create a new hash from text
-	let hash = hashCode(text);
-	let filePath = path.join(__dirname, "../audio/preprocessed/" + hash + ".wav");
-	//used to match hash with file name
-	hash = hash + ".wav";
+	return new Promise((resolve, reject) => {
+		//Create a new hash from text
+		let hash = hashCode(text);
+		//.wav used to match hash with file name
+		hash = hash + ".wav";
 
-	let found = hashedAudioFiles.filter(hashedAudioFile => {
+		let found = hashedAudioFiles.filter(hashedAudioFile => {
 
-		return hashedAudioFile.fileName === hash;
+			return hashedAudioFile.fileName === hash;
 
+		});
+
+		if (found.length) {
+
+			winston.info("File already hashed");
+
+			resolve(found[0].data);
+		} else {
+			winston.info("File not hashed");
+
+			cpqdAPI.textToSpeech(text)
+				//save new hashedAudio file
+				.then(audioBuffer => {
+					let newHashFilePath = path.join(__dirname, "../audio/preprocessed", hash);
+					fs.writeFile(newHashFilePath, audioBuffer, err => {
+						if (err) {
+							winston.error("Error while saving new file to hash folder");
+							reject(err);
+						} else {
+							winston.debug("Sucessfully saved new file " + newHashFilePath + " into hash folder");
+							updateHashedFiles();
+							resolve(audioBuffer);
+						}
+					});
+				})
+				.catch(error => {
+					reject(error);
+				});
+		}
 	});
-
-	if (found.length) {
-
-		console.log("File already hashed");
-
-		return (found[0].data);
-	} else {
-		return cpqdAPI.textToSpeech(text);
-	}
-
-
 
 }
 
 function speechToText(speech) {
 
-	return cpqdAPI.speechToText(speech);
+	return new Promise((resolve, reject) => {
+
+		cpqdAPI.speechToText(speech)
+			.then(text => {
+				resolve(text);
+			})
+			.catch(error => {
+				winston.error(error);
+				//returning gibberish in order to trigger watson "didn't understand" response
+				resolve("blubbers");
+			});
+	});
 }
 
+function updateHashedFiles() {
 
+	getHashedFiles(path.join(__dirname, "../audio/preprocessed/"))
+		.then(result => {
+			hashedAudioFiles = result;
+			winston.info("Updated hashed files in memory");
+		})
+		.catch(error => {
+			winston.error(error);
+		});
+}
 
 function getHashedFiles(dirName) {
 
@@ -111,7 +148,7 @@ function getHashedFiles(dirName) {
 
 						});
 					});
-					
+
 					promiseArray.push(promise);
 
 				});

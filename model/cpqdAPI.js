@@ -7,19 +7,15 @@
 const request = require("request"),
 	config = require("../config/cpqdServerConfig.json"),
 	textToSpeechServer = config.textToSpeechServer,
-	speechToTextServer = config.speechToTextServer,
-	fs = require("fs"),
-	path = require("path");
+	speechToTextServer = config.speechToTextServer,	
+	winston = require("../bin/logger.js");
 
 var parseXML = require("xml2js").parseString;
 
-
-
-
 /**
- * Transforms text in speech and saves to file
+ * Converts text to speech
  * @param {String} text - text to be converted to speech
- * @returns {String} path where the speech audio file is
+ * @returns {Buffer} buffer with converted speech
  */
 function textToSpeech(text) {
 
@@ -41,55 +37,46 @@ function textToSpeech(text) {
 
 		request(options, (error, response, body) => {
 
-			var xml = "<root>Hello xml2js!</root>";
 			parseXML(body, function (err, result) {
 				if (err) {
-					console.log("Error ocurred while parsing xml");
+					winston.error("Error ocurred while parsing xml");
 					reject(error);
 				}
-
-				let fileName = path.join(__dirname, "../audio/" + Math.random() * 100000 + ".wav");
 
 				options.url = result.textToSpeech.url[0];
 
 				let buffers = [];
-				// stdout.on('data', function (d) { bufs.push(d); });
-				// stdout.on('end', function () {
-
 
 				var stream = request(options, (error, request, body) => {
 					resolve(body);
 				})
 					.on("error", error => {
-						console.error("Error ocurred while querying textToSpeech API:");
+						winston.error("Error ocurred while querying textToSpeech API:");
 						reject(error);
-					})
+					});
 
-				stream.on('data', dataChunk => {
+				stream.on("data", dataChunk => {
 
 					buffers.push(dataChunk);
 				});
 
 				stream.on("end", () => {
+					//return buffer with recognized speech
 					resolve(Buffer.concat(buffers));
 				});
 
 			});
 		})
 			.on("error", error => {
-				console.error("Error ocurred while querying textToSpeech API:");
+				winston.error("Error ocurred while querying textToSpeech API:");
 				reject(error);
 			});
-	})
-
-		.catch(error => {
-			reject(error);
-		});
+	});
 }
 
 /**
- * Transforms speech in text
- * @param {blob} data - audio data to be converted to speech
+ * Converts speech to text
+ * @param {Buffer} data - audio data to be converted to speech
  * @returns {String} text
  */
 function speechToText(data) {
@@ -99,15 +86,10 @@ function speechToText(data) {
 		if (!Buffer.isBuffer(data))
 			reject(new Error("data must be of type buffer"));
 
-		// fs.readFile(audioFilePath, function read(err, data) {
-		// if (err) {
-		// throw new Error(err);
-		// }
 		request({
 			method: "POST",
 			url: speechToTextServer.url,
 			headers: {
-				// "Transfer-Encoding": "chunked",
 				"Content-Type": "audio/wav"
 			},
 			auth: {
@@ -116,28 +98,26 @@ function speechToText(data) {
 			},
 			body: data
 		},
-			(error, response, body) => {
+		(error, response, body) => {
 
-				body = JSON.parse(body);
+			body = JSON.parse(body);
 
-				if (body.alternatives[0]) {
-					console.log("parsed speech");
-					resolve(body.alternatives[0].text);
-				} else {
-					//return 
-					resolve("blubbers");
-				}
+			if (body.alternatives[0]) {
 
-			})
+				resolve(body.alternatives[0].text);
+			} else {
+
+				reject(new Error("Couldn't parse speech"));
+			}
+
+		})
 			.on("error", function (err) {
 				reject(err);
 			});
-		// });
 	});
 }
 
-module.exports = {
-	// speechToText: speechToText,
+module.exports = {	
 	textToSpeech: textToSpeech,
 	speechToText: speechToText
 };

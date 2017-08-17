@@ -4,8 +4,9 @@
  * @author Paulo Henrique <pauloh@br.ibm.com>  
  */
 
-var watsonConversation = require('./watsonConversation.js');
-const winston = require('../bin/logger.js');
+var watsonConversation = require("./watsonConversation.js");
+
+const winston = require("../bin/logger.js");
 
 function talk(text, clientId) {
 
@@ -21,10 +22,8 @@ function talk(text, clientId) {
 
 			});
 	});
-
-
 }
 
 module.exports = {
 	talk: talk
-}
+};
