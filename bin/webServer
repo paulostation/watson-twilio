@@ -38,17 +38,16 @@ voiceAPI.init()
 		winston.info("Voice API initialization done");
 		server.listen(port);
 
-		
-		// io.listen(9001);
-
-		
 		server.listen(3000);
-		module.exports.io
 		module.exports.binaryServer = BinaryServer({ port: 9001 });
 		winston.info("BinaryServer started on port 9001");
 		require("../controllers/binaryServer.js");
 		server.on("error", onError);
 		server.on("listening", onListening);
+	})
+	.catch(error => {
+		winston.error("Error while starting web server.");
+		winston.error(error);
 	});
 
 /**

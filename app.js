@@ -1,179 +1,46 @@
-var express = require("express");
-var BinaryServer = require("binaryjs").BinaryServer;
-var fs = require("fs");
+var express = require('express');
+var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
-const wav = require("wav");
+var index = require('./routes/index');
+var users = require('./routes/users');
 
-var cpqdApiController = require("./modules/cpqdApiController.js");
-
-var conversation = require("./modules/watsonConversationController.js");
-
-var port = 3700;
 var app = express();
 
-app.set("views", __dirname + "/tpl");
-app.set("view engine", "jade");
-app.engine("jade", require("jade").__express);
-app.use(express.static(__dirname + "/public"));
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
-app.get("/", function (req, res) {
-	res.render("index");
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/', index);
+app.use('/users', users);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
-app.listen(port);
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-
-
-var fileWriter = null;
-
-// request("https://speech.cpqd.com.br/asr/rest/v1/recognize/8k", options, data => {
-// console.log(data);
-// });
-
-
-// request('http://www.google.com', function (error, response, body) {
-//   console.log('error:', error); // Print the error if one occurred
-//   console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-//   console.log('body:', body); // Print the HTML for the Google homepage.
-// });
-
-var socketClient;
-
-var stopWatch;
-
-var context;
-
-function endStream() {
-	return new Promise((resolve, reject) => {
-		stopWatch = new Date().getTime();
-		console.log("file written");
-		fileWriter.end();
-
-		const {
-			spawn
-		} = require("child_process");
-
-		const deploySh = spawn("ffmpeg", ["-y", "-i", "./audio/audio_original.wav", "-ar", "8000", "-acodec", "pcm_s16le", "-ac", "1", "./audio/audio_convertido.wav"], {});
-
-		let output = "";
-		deploySh.stdout.on("data", (data) => {
-
-			output += data;
-			// console.log(`stdout: ${data}`);
-		});
-
-		deploySh.stderr.on("data", (data) => {
-			output += data;
-			// console.log(`stderr: ${data}`);
-		});
-
-		deploySh.on("close", (code) => {
-			// console.log(output);
-
-			(code === 0) ?
-				resolve("./audio/audio_convertido.wav")
-				:
-				reject(new Error("File not found when sending WAV"));
-
-
-
-		});
-
-	});
-
-
-}
-
-function sendWatsonGreeting() {
-
-}
-
-console.log("server open on port " + port);
-
-var binaryServer = BinaryServer({ port: 9001 });
-
-binaryServer.on("connection", function (client) {
-
-	console.log("new connection");
-
-	//when client connects, send him the greeting message from Watson Conversation
-	// client.send(fs.createReadStream(conversation.watsonGreetingAudioPath));
-
-	conversation.message("")
-		.then(result => {
-			context = result.context;
-			return result;
-		})
-		.then(result => {
-			return conversation.textToSpeech(result.output.text[0]);
-		})
-		.then(result => {
-			console.log("buffer sent to client");
-			client.send(result);
-		})
-
-	client.on("stream", function (stream, meta) {
-		console.log("new stream");
-
-		fileWriter = new wav.FileWriter("./audio/demo.wav", {
-			channels: 1,
-			sampleRate: 44100,
-			bitDepth: 16
-		});
-
-		stream.pipe(fileWriter);
-
-		stream.on("end", () => {
-			var stopWatch = new Date().getTime();
-			var start = stopWatch;
-			let elapsedTime;
-			endStream()
-				.then(audioFilePath => {
-					elapsedTime = new Date().getTime() - stopWatch;
-					console.log("Audio file converted in", elapsedTime, "ms");
-					stopWatch = new Date().getTime();
-					return cpqdApiController.speechToText(audioFilePath);
-				})
-				.then(userInput => {
-					elapsedTime = new Date().getTime() - stopWatch;
-					console.log();
-					console.log("Parsed speech to text in", elapsedTime, "ms");
-					console.log("User input: ", userInput);
-					stopWatch = new Date().getTime();
-
-					return conversation.message(userInput, context);
-				})
-				.then(watsonResponse => {
-					context = watsonResponse.context;
-					elapsedTime = new Date().getTime() - stopWatch;
-					console.log("watsonResponse:", watsonResponse.output.text[0]);
-					console.log("Generated in ", elapsedTime, "ms\n");
-
-					stopWatch = new Date().getTime();
-
-					return conversation.textToSpeech(watsonResponse.output.text[0]);
-				})
-				.then(audioFile => {
-
-					elapsedTime = new Date().getTime() - stopWatch;
-					let totalElapsedTime = new Date().getTime() - start;
-					console.log();
-					console.log("Speech generated in", elapsedTime, "ms");
-
-					console.log("totalElapsedTime:", totalElapsedTime);
-
-					client.send(audioFile);
-				})
-				.catch(error => {
-					console.log(error);
-				});
-		});
-	});
-
-	client.on("close", function () {
-		if (fileWriter != null) {
-			endStream(client);
-		}
-	});
-
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
 });
+
+module.exports = app;
