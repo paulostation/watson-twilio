@@ -21,7 +21,7 @@
 				// console.log("finished");
 				console.log("Checking for speech...", maxSample);
 
-				if (maxSample > 0.12) {
+				if (maxSample > 0.2) {
 
 					console.log("speech detected");
 					speaking = true;
@@ -53,7 +53,7 @@
 					samples = [];
 					clearInterval(checkSilenceHandler);
 					window.Stream.end();
-					isSpeakingHandler = setInterval(isSpeaking, 250);
+					
 				}
 			}
 		});
@@ -92,10 +92,11 @@
 
 			audioContext = window.AudioContext || window.webkitAudioContext;
 			context = new audioContext();
-
+			
 			// the sample rate is in context.sampleRate
 			audioInput = context.createMediaStreamSource(e);
-
+			console.log(context.sampleRate);
+			console.log(context);
 			var bufferSize = 16384;
 			recorder = context.createScriptProcessor(bufferSize, 1, 1);
 
@@ -105,7 +106,8 @@
 
 				samples.push(e.inputBuffer.getChannelData(0));
 				if (speaking) {
-					var leftChannel = e.inputBuffer.getChannelData(0);
+					var leftChannel = e.inputBuffer;
+					console.log(e.inputBuffer);
 					// window.Stream.write(convertoFloat32ToInt16(leftChannel));
 					window.Stream.write(leftChannel);
 				}
@@ -126,7 +128,7 @@
 			return buf.buffer;
 		}
 
-		isSpeakingHandler = setInterval(isSpeaking, 250);
+		
 
 	});
 
@@ -146,6 +148,13 @@
 			audio.src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
 
 			audio.play();
+
+			audio.onended = () => {
+				setTimeout( () => {
+					isSpeakingHandler = setInterval(isSpeaking, 250);
+				}, 250);
+				
+			};	
 
 		});
 	});

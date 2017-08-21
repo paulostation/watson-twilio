@@ -8,7 +8,7 @@
 var app = require("../app");
 var debug = require("debug")("app:server");
 var http = require("http");
-var io = require('socket.io')(server);
+var io = require("socket.io")(server);
 
 const voiceAPI = require("../model/voiceAPI.js"),
 	winston = require("./logger.js"),
@@ -36,7 +36,7 @@ let binaryServer;
 voiceAPI.init()
 	.then(() => {
 		winston.info("Voice API initialization done");
-		server.listen(port);
+		server.listen(port, "0.0.0.0");
 
 		module.exports.binaryServer = BinaryServer({ port: 9001 });
 		winston.info("BinaryServer started on port 9001");
@@ -88,16 +88,16 @@ function onError(error) {
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
 
-		case "EACCES":
-			winston.error(bind + " requires elevated privileges");
-			process.exit(1);
-			break;
-		case "EADDRINUSE":
-			winston.error(bind + " is already in use");
-			process.exit(1);
-			break;
-		default:
-			throw error;
+	case "EACCES":
+		winston.error(bind + " requires elevated privileges");
+		process.exit(1);
+		break;
+	case "EADDRINUSE":
+		winston.error(bind + " is already in use");
+		process.exit(1);
+		break;
+	default:
+		throw error;
 	}
 }
 
