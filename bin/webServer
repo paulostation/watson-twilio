@@ -8,7 +8,7 @@
 var app = require("../app");
 var debug = require("debug")("app:server");
 var http = require("http");
-var io = require("socket.io")(server);
+
 
 const voiceAPI = require("../model/voiceAPI.js"),
 	winston = require("./logger.js"),
@@ -114,6 +114,3 @@ function onListening() {
 		: "port " + addr.port;
 	winston.info("Listening on " + bind);
 }
-module.exports = {
-	io: io
-};

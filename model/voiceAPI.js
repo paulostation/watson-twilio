@@ -63,11 +63,11 @@ function textToSpeech(text) {
 
 		if (found.length) {
 
-			winston.info("File already hashed");
+			winston.verbose("File already hashed");
 
 			resolve(found[0].data);
 		} else {
-			winston.info("File not hashed");
+			winston.verbose("File not hashed");
 
 			cpqdAPI.textToSpeech(text)
 				//save new hashedAudio file

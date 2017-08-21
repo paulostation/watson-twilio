@@ -5,11 +5,12 @@
 
 var winston = require("winston");
 
-winston.level = "info";
+winston.level = "verbose";
 
 module.exports = {
 	log: winston.log,
 	info: winston.info,
 	debug: winston.debug,
-	error: winston.error	
+	error: winston.error,
+	verbose: winston.verbose	
 };
