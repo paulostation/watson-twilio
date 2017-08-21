@@ -6,6 +6,7 @@
     "start": "node ./bin/webServer"
   },
   "dependencies": {
+    "audio-resampler": "^1.0.1",
     "audiobuffer-to-wav": "^1.0.0",
     "binaryjs": "latest",
     "body-parser": "^1.17.2",
@@ -16,12 +17,14 @@
     "lame": "^1.2.4",
     "morgan": "^1.8.2",
     "request": "^2.81.0",
+    "resampler": "",
     "socket.io": "^2.0.3",
     "stream": "0.0.2",
     "stream-to": "^2.0.0",
     "stream-to-array": "^2.3.0",
     "watson-developer-cloud": "^2.37.0",
     "wav": "latest",
+    "wav-encoder": "^1.3.0",
     "winston": "^2.3.1",
     "xml2js": "^0.4.17"
   },

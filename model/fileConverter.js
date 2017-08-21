@@ -15,7 +15,7 @@ function resampleTo8KHz(filename) {
 		} = require("child_process");
 		let outputPath = path.join(__dirname, "../audio/audio_convertido.wav");
 
-		const deploySh = spawn("ffmpeg", ["-y", "-i", filename, "-ar", "8000", "-acodec", "pcm_s16le", "-ac", "1", outputPath], {});
+		const deploySh = spawn("ffmpeg", ["-y", "-f", "s16le",  "-ar", 44100, "-ac", 1, "-i", filename, "-ar", "8000", "-acodec", "pcm_s16le", "-ac", "1", outputPath], {});
 
 		let stdout = "";
 		let stderr = "";
@@ -43,8 +43,8 @@ function resampleTo8KHz(filename) {
 				});
 
 			} else {
-
-				reject(new Error("File not found when sending WAV"));
+				winston.error("Error while converting raw audio to 8K WAV");
+				reject(new Error(stderr));
 			}
 
 		});

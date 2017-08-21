@@ -97,7 +97,7 @@
 			audioInput = context.createMediaStreamSource(e);
 			console.log(context.sampleRate);
 			console.log(context);
-			var bufferSize = 16384;
+			var bufferSize = 4096;
 			recorder = context.createScriptProcessor(bufferSize, 1, 1);
 
 			recorder.onaudioprocess = function (e) {
@@ -106,10 +106,9 @@
 
 				samples.push(e.inputBuffer.getChannelData(0));
 				if (speaking) {
-					var leftChannel = e.inputBuffer;
+					var leftChannel = e.inputBuffer.getChannelData(0);
 					console.log(e.inputBuffer);
-					// window.Stream.write(convertoFloat32ToInt16(leftChannel));
-					window.Stream.write(leftChannel);
+					window.Stream.write(convertoFloat32ToInt16(leftChannel));
 				}
 
 			};
@@ -151,7 +150,7 @@
 
 			audio.onended = () => {
 				setTimeout( () => {
-					isSpeakingHandler = setInterval(isSpeaking, 250);
+					isSpeakingHandler = setInterval(isSpeaking, 50);
 				}, 250);
 				
 			};	

@@ -47,7 +47,8 @@ voiceAPI.init()
 	})
 	.catch(error => {
 
-		winston.error("Error while starting web server.");		
+		winston.error("Error while starting web server.");
+		winston.error(error);		
 		throw error;
 		
 	});
@@ -97,6 +98,7 @@ function onError(error) {
 		process.exit(1);
 		break;
 	default:
+		winston.error(error);
 		throw error;
 	}
 }
