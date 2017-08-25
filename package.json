@@ -20,6 +20,6 @@
   },
   "author": "pauloh",
   "engines": {
-    "node": "4.x"
+    "node": "6.x"
   }
 }
