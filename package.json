@@ -1,12 +1,12 @@
 {
-  "name": "watson-voice-chat",
+  "name": "watson-voice-chat",  
   "version": "0.0.0",
   "description": "Orquestrador de dados que transforma texto em voz e consulta o watson",
   "scripts": {
     "start": "node ./bin/webServer"
   },
+  "private":false,
   "dependencies": {
-    "binaryjs": "latest",
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
     "ejs": "^2.5.7",
@@ -20,6 +20,6 @@
   },
   "author": "pauloh",
   "engines": {
-    "node": "6.x"
+    "node": "6.*"
   }
 }
