@@ -1,8 +1,5 @@
+---
 applications:
-- path: .
+- name: watson-voice-chat
+  random-route: true
   memory: 256M
-  instances: 1
-  domain: mybluemix.net
-  name: watson voice chat
-  host: watson-voice-chat
-  disk_quota: 1024M
