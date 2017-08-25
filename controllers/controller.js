@@ -27,6 +27,8 @@ function guid() {
 
 function twilioHandler(request) {
 
+	let timeout = 3;
+
 	return new Promise((resolve, reject) => {
 
 		// Use the Twilio Node.js SDK to build an XML response
@@ -39,8 +41,9 @@ function twilioHandler(request) {
 			twiml.play("https://185bf826.ngrok.io/twilio/play/greeting_message.wav");
 
 			twiml.record({
-				timeout: 3
+				timeout: timeout
 			});
+
 
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
@@ -53,9 +56,9 @@ function twilioHandler(request) {
 		else {
 
 			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
-			
-			voiceAPI.getAudioFromURL(request.body.RecordingUrl, request.body.CallSid)				
-				.then(audioBuffer => {					
+
+			voiceAPI.getAudioFromURL(request.body.RecordingUrl, request.body.CallSid)
+				.then(audioBuffer => {
 					return voiceAPI.speechToText(audioBuffer);
 				})
 				.then((text) => {
@@ -74,19 +77,10 @@ function twilioHandler(request) {
 				})
 				.then(result => {
 
-					// elapsedTime = new Date().getTime() - stopWatch;
-					// let totalElapsedTime = new Date().getTime() - start;
-
-					// winston.verbose("Speech generated in", elapsedTime, "ms");
-					// winston.verbose("totalElapsedTime:", totalElapsedTime, "ms");
-
-
-					//chamar com retorno do cpqd
-
 					twiml.play("https://185bf826.ngrok.io/twilio/play/" + result.fileName);
 
 					twiml.record({
-						timeout: 5
+						timeout: timeout
 					});
 
 					// response.writeHead(200, { "Content-Type": "text/xml" });

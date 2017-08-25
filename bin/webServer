@@ -11,8 +11,7 @@ var http = require("http");
 
 
 const voiceAPI = require("../model/voiceAPI.js"),
-	winston = require("./logger.js"),
-	{ BinaryServer } = require("binaryjs");
+	winston = require("./logger.js");
 
 /**
 * Get port from environment and store in Express.
@@ -38,8 +37,8 @@ voiceAPI.init()
 		winston.info("Voice API initialization done");
 		server.listen(port, "0.0.0.0");
 
-		module.exports.binaryServer = BinaryServer({ port: 9001 });
-		winston.info("BinaryServer started on port 9001");
+		// module.exports.binaryServer = BinaryServer({ port: 9001 });
+		// winston.info("BinaryServer started on port 9001");
 		//initate controller
 		require("../controllers/controller.js");
 		server.on("error", onError);
