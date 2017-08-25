@@ -35,7 +35,7 @@ let binaryServer;
 voiceAPI.init()
 	.then(() => {
 		winston.info("Voice API initialization done");
-		server.listen(port, "0.0.0.0");
+		server.listen(port);
 
 		// module.exports.binaryServer = BinaryServer({ port: 9001 });
 		// winston.info("BinaryServer started on port 9001");
