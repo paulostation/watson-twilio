@@ -2,9 +2,11 @@ const cpqdAPI = require("./cpqdAPI.js"),
 	conversation = require("./conversationAPI.js"),
 	path = require("path"),
 	fs = require("fs"),
+	request = require("request"),
 	winston = require("../bin/logger.js");
 
-var greetingMessage;
+let greetingMessage,
+	greetingMessagePath;
 
 var hashedAudioFiles = [];
 
@@ -18,6 +20,20 @@ function init() {
 			})
 			.then(audioBuffer => {
 				module.exports.greetingMessage = audioBuffer;
+
+				//also, save file to disk
+				let greetingMessagePath = path.join(__dirname, "../audio/preprocessed/greeting_message.wav");
+
+				module.exports.greetingMessagePath = greetingMessagePath;
+
+				fs.writeFile(greetingMessagePath, audioBuffer, err => {
+
+					if (err)
+						reject(err);
+
+					winston.verbose("Greeting message saved at: " + greetingMessagePath);
+
+				});
 			})
 			.then(() => {
 				return getHashedFiles(path.join(__dirname, "../audio/preprocessed/"));
@@ -65,7 +81,12 @@ function textToSpeech(text) {
 
 			winston.verbose("File already hashed");
 
-			resolve(found[0].data);
+
+			resolve({
+				audioBuffer: found[0].data,
+				fileName: hash
+			});
+			
 		} else {
 			winston.verbose("File not hashed");
 
@@ -80,7 +101,10 @@ function textToSpeech(text) {
 						} else {
 							winston.debug("Sucessfully saved new file " + newHashFilePath + " into hash folder");
 							updateHashedFiles();
-							resolve(audioBuffer);
+							resolve({
+								audioBuffer: audioBuffer,
+								fileName: hash
+							});
 						}
 					});
 				})
@@ -166,9 +190,88 @@ function getHashedFiles(dirName) {
 
 }
 
+function getAudioBufferFromFile(path) {
+
+	return new Promise(function (resolve, reject) {
+		fs.readFile(path, function (err, data) {
+			if (err)
+				reject(err);
+			else
+				resolve(data);
+		});
+	});
+
+}
+
+function downloadAudioFromURLandSaveToFile(url, id) {
+
+	var newPath = path.join(__dirname, "../audio/calls/") + id + ".wav";
+
+	return new Promise(function (resolve, reject) {
+
+		winston.verbose("Downloading audio from " + url);
+
+		let options = {
+			url: url,
+			method: "GET"
+		};
+
+		request(options, (error, request, body) => {
+			// resolve(body);
+			// console.log()
+		})
+			.on("error", error => {
+				winston.error("Error ocurred while downloading audio from twilio");
+				reject(error);
+			})
+			.on("end", () => {
+				winston.verbose("Audio from twilio saved to " + newPath);
+			})
+			.pipe(fs.createWriteStream(newPath));
+	});
+}
+
+function getAudioFromURL(url) {
+
+	return new Promise(function (resolve, reject) {
+
+		winston.verbose("Downloading audio from " + url);
+
+		let options = {
+			url: url,
+			method: "GET"
+		};
+
+		let buffers = [];
+
+		var stream = request(options, (error, request, body) => {
+
+		})
+			.on("error", error => {
+				winston.error("Error ocurred while downloading audio from twilio");
+				reject(error);
+			});
+
+		stream.on("data", dataChunk => {
+
+			buffers.push(dataChunk);
+		});
+
+		stream.on("end", () => {
+			winston.verbose("Finished downloading audio from twilio");
+			//return buffer with recognized speech
+			resolve(Buffer.concat(buffers));
+		});
+	});
+}
+
 module.exports = {
 	init: init,
 	greetingMessage: greetingMessage,
 	textToSpeech: textToSpeech,
-	speechToText: speechToText
+	speechToText: speechToText,
+	greetingMessagePath: greetingMessagePath,
+	downloadAudioFromURLandSaveToFile: downloadAudioFromURLandSaveToFile,
+	getAudioBufferFromFile: getAudioBufferFromFile,
+	getAudioFromURL: getAudioFromURL
 };

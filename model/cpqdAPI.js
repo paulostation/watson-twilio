@@ -7,7 +7,7 @@
 const request = require("request"),
 	config = require("../config/cpqdServerConfig.json"),
 	textToSpeechServer = config.textToSpeechServer,
-	speechToTextServer = config.speechToTextServer,	
+	speechToTextServer = config.speechToTextServer,
 	winston = require("../bin/logger.js");
 
 var parseXML = require("xml2js").parseString;
@@ -100,16 +100,21 @@ function speechToText(data) {
 		},
 		(error, response, body) => {
 
-			body = JSON.parse(body);
 
-			if (body.alternatives[0]) {
-
-				resolve(body.alternatives[0].text);
+			if (response.statusCode !== 200) {
+				reject(new Error("Error while querying CPqD Text to speech API"));
 			} else {
 
-				reject(new Error("Couldn't parse speech"));
-			}
+				body = JSON.parse(body);
 
+				if (body.alternatives[0]) {
+
+					resolve(body.alternatives[0].text);
+				} else {
+
+					reject(new Error("Couldn't parse speech"));
+				}
+			}
 		})
 			.on("error", function (err) {
 				reject(err);
@@ -117,7 +122,7 @@ function speechToText(data) {
 	});
 }
 
-module.exports = {	
+module.exports = {
 	textToSpeech: textToSpeech,
 	speechToText: speechToText
 };

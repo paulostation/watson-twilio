@@ -15,10 +15,11 @@
     "request": "^2.81.0",
     "watson-developer-cloud": "^2.37.0",
     "winston": "^2.3.1",
-    "xml2js": "^0.4.17"
+    "xml2js": "^0.4.17",
+    "twilio": ""
   },
   "author": "pauloh",
   "engines": {
-		"node": "4.x"
-	}
+    "node": "4.x"
+  }
 }
