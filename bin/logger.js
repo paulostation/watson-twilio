@@ -5,7 +5,7 @@
 
 var winston = require("winston");
 
-winston.level = "trace";
+winston.level = "silly";
 
 module.exports = {
 	log: winston.log,
