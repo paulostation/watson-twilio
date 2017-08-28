@@ -98,7 +98,11 @@ function speechToText(data) {
 		}, (error, response, body) => {
 
 			if (response.statusCode !== 200) {
-				reject(new Error("Error while querying CPqD Text to speech API"));
+
+				winston.trace("Status code: " + response.statusCode);
+				winston.trace(body);
+				reject(new Error("Error while querying CPqD speech to text API"));\
+				
 			} else {
 				//response body comes as string, parse it
 				body = JSON.parse(body);
