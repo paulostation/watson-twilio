@@ -13,5 +13,6 @@ module.exports = {
 	debug: winston.debug,
 	error: winston.error,
 	verbose: winston.verbose,
-	trace: winston.trace	
+	trace: winston.silly,
+	silly: winston.silly	
 };
