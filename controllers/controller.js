@@ -30,16 +30,13 @@ function twilioHandler(request) {
 				timeout: timeout
 			});
 
-
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
 			conversation.talk("", request.body.CallSid);
 
-			// response.writeHead(200, { "Content-Type": "text/xml" });
 			resolve(twiml.toString());
 
-		}
-		else {
+		} else {
 
 			winston.trace("Continuing existing conversation: " + request.body.CallSid);
 
