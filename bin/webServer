@@ -6,8 +6,8 @@
 
 
 var app = require("../app");
+var debug = require("debug")("app:server");
 var http = require("http");
-
 
 const voiceAPI = require("../model/voiceAPI.js"),
 	winston = require("./logger.js");
