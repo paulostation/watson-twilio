@@ -216,10 +216,7 @@ function downloadAudioFromURLandSaveToFile(url, id) {
 			method: "GET"
 		};
 
-		request(options, (error, request, body) => {
-			// resolve(body);
-			// console.log()
-		})
+		request(options)
 			.on("error", error => {
 				winston.error("Error ocurred while downloading audio from twilio");
 				reject(error);
@@ -235,7 +232,7 @@ function getAudioFromURL(url) {
 
 	return new Promise(function (resolve, reject) {
 
-		winston.verbose("Downloading audio from " + url);
+		winston.trace("Downloading audio from " + url);
 
 		let options = {
 			url: url,
@@ -244,9 +241,7 @@ function getAudioFromURL(url) {
 
 		let buffers = [];
 
-		var stream = request(options, (error, request, body) => {
-
-		})
+		var stream = request(options)
 			.on("error", error => {
 				winston.error("Error ocurred while downloading audio from twilio");
 				reject(error);
@@ -258,7 +253,7 @@ function getAudioFromURL(url) {
 		});
 
 		stream.on("end", () => {
-			winston.verbose("Finished downloading audio from twilio");
+			winston.trace("Finished downloading audio from twilio");
 			//return buffer with recognized speech
 			resolve(Buffer.concat(buffers));
 		});

@@ -19,6 +19,7 @@ function talk(text, clientId) {
 
 			}).catch(error => {
 				winston.error("Error while calling watson conversation api", error);
+				reject(error);
 			});
 	});
 }

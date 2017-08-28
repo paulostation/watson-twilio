@@ -9,6 +9,7 @@ const winston = require("../bin/logger.js"),
 	conversation = require("../model/conversationAPI.js"),
 	VoiceResponse = require("twilio").twiml.VoiceResponse;
 
+<<<<<<< HEAD
 
 //Used to generate uids for clients
 function guid() {
@@ -22,8 +23,13 @@ function guid() {
 }
 
 function speechRecognitionUsingCPqD(request) {
+=======
+function twilioHandler(request) {
+>>>>>>> dev
 
-	let timeout = 3;
+	let timeout = 5;
+
+	let hostname = "watson-voice-chat.mybluemix.net";
 
 	return new Promise((resolve, reject) => {
 
@@ -36,24 +42,32 @@ function speechRecognitionUsingCPqD(request) {
 		if (!request.body.RecordingUrl) {
 
 			winston.verbose("New conversation started");
+<<<<<<< HEAD
 
 			//new conversation, send greeting message			
 			twiml.play("https://185bf826.ngrok.io/twilio/play/greeting_message.wav");
+=======
+			//new conversation, send greeting message
+			twiml.play("https:// " + hostname + "/twilio/play/greeting_message.wav");
+>>>>>>> dev
 
 			twiml.record({
 				timeout: timeout
+
+<<<<<<< HEAD
+=======
 			});
 
+>>>>>>> dev
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
 			conversation.talk("", request.body.CallSid);
 
 			resolve(twiml.toString());
 
-		}
-		else {
+		} else {
 
-			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
+			winston.trace("Continuing existing conversation: " + request.body.CallSid);
 
 			voiceAPI.getAudioFromURL(request.body.RecordingUrl, request.body.CallSid)
 				.then(audioBuffer => {
@@ -65,6 +79,7 @@ function speechRecognitionUsingCPqD(request) {
 				})
 				.then(watsonResponse => {
 
+<<<<<<< HEAD
 					// elapsedTime = new Date().getTime() - stopWatch;
 					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
 
@@ -75,6 +90,25 @@ function speechRecognitionUsingCPqD(request) {
 
 					resolve(twiml.toString());
 				})
+=======
+					winston.debug("watsonResponse:", watsonResponse.output.text[0]);
+
+					twiml.say({
+						voice: 'woman',
+						language: "pt-BR"
+					},"teste de voz");
+
+					resolve(twiml.toString());
+
+					// return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
+				})
+				// .then(result => {
+
+					// twiml.play("https://" + hostname + "/twilio/play/" + result.fileName);
+
+					
+				// })
+>>>>>>> dev
 				.catch(error => {
 					winston.error(error);
 					reject(error);
@@ -82,6 +116,7 @@ function speechRecognitionUsingCPqD(request) {
 		}
 	});
 }
+<<<<<<< HEAD
 
 function speechRecognitionUsingTwilio(request) {
 
@@ -156,6 +191,8 @@ function speechRecognitionUsingTwilio(request) {
 		}
 	});
 }
+=======
+>>>>>>> dev
 
 module.exports = {
 	twilioHandler: speechRecognitionUsingTwilio

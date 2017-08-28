@@ -9,7 +9,6 @@ var app = require("../app");
 var debug = require("debug")("app:server");
 var http = require("http");
 
-
 const voiceAPI = require("../model/voiceAPI.js"),
 	winston = require("./logger.js");
 
@@ -82,17 +81,17 @@ function onError(error) {
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
 
-		case "EACCES":
-			winston.error(bind + " requires elevated privileges");
-			process.exit(1);
-			break;
-		case "EADDRINUSE":
-			winston.error(bind + " is already in use");
-			process.exit(1);
-			break;
-		default:
-			winston.error(error);
-			throw error;
+	case "EACCES":
+		winston.error(bind + " requires elevated privileges");
+		process.exit(1);
+		break;
+	case "EADDRINUSE":
+		winston.error(bind + " is already in use");
+		process.exit(1);
+		break;
+	default:
+		winston.error(error);
+		throw error;
 	}
 }
 
