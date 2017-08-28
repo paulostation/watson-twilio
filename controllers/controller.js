@@ -6,13 +6,9 @@
 
 const winston = require("../bin/logger.js"),
 	voiceAPI = require("../model/voiceAPI.js"),
-	converter = require("../model/fileConverter.js"),
-	path = require("path"),
-	fs = require("fs"),
 	conversation = require("../model/conversationAPI.js"),
 	VoiceResponse = require("twilio").twiml.VoiceResponse;
 
-let { binaryServer } = require("../bin/webServer");
 
 //Used to generate uids for clients
 function guid() {
@@ -25,7 +21,7 @@ function guid() {
 		s4() + "-" + s4() + s4() + s4();
 }
 
-function twilioHandler(request) {
+function speechRecognitionUsingCPqD(request) {
 
 	let timeout = 3;
 
@@ -34,22 +30,24 @@ function twilioHandler(request) {
 		// Use the Twilio Node.js SDK to build an XML response
 		const twiml = new VoiceResponse();
 
+		console.log(request.body);
+
 		//if RecordingUrl not found, then call just started
 		if (!request.body.RecordingUrl) {
+
 			winston.verbose("New conversation started");
-			//new conversation, send greeting message
+
+			//new conversation, send greeting message			
 			twiml.play("https://185bf826.ngrok.io/twilio/play/greeting_message.wav");
 
 			twiml.record({
 				timeout: timeout
 			});
 
-
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
 			conversation.talk("", request.body.CallSid);
 
-			// response.writeHead(200, { "Content-Type": "text/xml" });
 			resolve(twiml.toString());
 
 		}
@@ -69,21 +67,12 @@ function twilioHandler(request) {
 
 					// elapsedTime = new Date().getTime() - stopWatch;
 					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
-					// winston.verbose("Generated in ", elapsedTime, "ms\n");
 
-					// stopWatch = new Date().getTime();
+					twiml.say({
+						voice: "woman",
+						language: "pt-BR"
+					}, watsonResponse.output.text[0]);
 
-					return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
-				})
-				.then(result => {
-
-					twiml.play("https://185bf826.ngrok.io/twilio/play/" + result.fileName);
-
-					twiml.record({
-						timeout: timeout
-					});
-
-					// response.writeHead(200, { "Content-Type": "text/xml" });
 					resolve(twiml.toString());
 				})
 				.catch(error => {
@@ -93,93 +82,81 @@ function twilioHandler(request) {
 		}
 	});
 }
-/*
-binaryServer.on("connection", function (client) {
 
-	winston.debug("new connection");
+function speechRecognitionUsingTwilio(request) {
 
-	//when client connects, send him the greeting message from voice API
-	client.send(voiceAPI.greetingMessage);
+	let timeout = 3;
 
-	if (!client._id) {
-		winston.log("verbose", "Creating a new clientID for the new connected client");
-		client._id = guid();
-		conversation.talk("", client._id);
-	}
+	return new Promise((resolve, reject) => {
 
-	client.on("stream", function (stream) {
-		winston.debug("new stream");
+		// Use the Twilio Node.js SDK to build an XML response
+		const twiml = new VoiceResponse();
 
-		let absolutePath = path.join(__dirname, "../audio/audio_client.raw");
+		//if SpeechResult not found, then call just started
+		if (!request.body.SpeechResult) {
+			winston.verbose("New conversation started");
 
-		stream.pipe(fs.createWriteStream(absolutePath));
+			winston.log("verbose", "Creating a new clientID for the new connected client");
 
-		let buffers = [];
+			conversation.talk("", request.body.CallSid);
 
-		stream.on("data", data => {
-			buffers.push(data);
-		});
 
-		stream.on("end", () => {
+			const VoiceResponse = require("twilio").twiml.VoiceResponse;
 
-			winston.debug("stream ended");
+			const response = new VoiceResponse();
+			const gather = response.gather({
+				input: "speech",
+				timeout: 5,
+				speechTimeout: 1,
+				numDigits: 1,
+				language: "pt-BR"
+			});
 
-			winston.debug("file written");
-			// fileWriter.end();
-			var stopWatch = new Date().getTime();
-			var start = stopWatch;
-			let elapsedTime;
+			//new conversation, send greeting message
+			gather.say({
+				language: "pt-BR",
+				voice: "man"
+			}, "Olá, sou o Watson, seu assistente cognitivo. Como posso te ajudar?");
 
-			converter.resampleTo8KHz(absolutePath)
-				.then(audioFilePath => {
+			resolve(response.toString());
 
-					elapsedTime = new Date().getTime() - stopWatch;
-					winston.verbose("Audio file converted in", elapsedTime, "ms");
-					stopWatch = new Date().getTime();
-					return voiceAPI.speechToText(audioFilePath);
-				})
-				.then(userInput => {
+		}
+		else {
+			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
 
-					elapsedTime = new Date().getTime() - stopWatch;
+			if (request.body.SpeechResult) {
+				conversation.talk(request.body.SpeechResult, request.body.CallSid)
+					.then(watsonResponse => {
 
-					winston.verbose("Parsed speech to text in", elapsedTime, "ms");
-					winston.verbose("User input: ", userInput);
-					stopWatch = new Date().getTime();
+						// elapsedTime = new Date().getTime() - stopWatch;
+						winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
+						const response = new VoiceResponse();
 
-					return conversation.talk(userInput, this._id);
-				})
-				.then(watsonResponse => {
+						const gather = response.gather({
+							input: "speech",
+							timeout: 5,
+							speechTimeout: 1,
+							numDigits: 1,
+							language: "pt-BR"
+						});
 
-					elapsedTime = new Date().getTime() - stopWatch;
-					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
-					winston.verbose("Generated in ", elapsedTime, "ms\n");
+						gather.say({
+							voice: "man",
+							language: "pt-BR"
+						}, watsonResponse.output.text[0]);
 
-					stopWatch = new Date().getTime();
+						resolve(response.toString());
+					})
+					.catch(error => {
+						reject(error);
+					});
+			}
 
-					return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
-				})
-				.then(audioFile => {
 
-					elapsedTime = new Date().getTime() - stopWatch;
-					let totalElapsedTime = new Date().getTime() - start;
-
-					winston.verbose("Speech generated in", elapsedTime, "ms");
-					winston.verbose("totalElapsedTime:", totalElapsedTime, "ms");
-
-					client.send(audioFile);
-				})
-				.catch(error => {
-					winston.error(error);
-				});
-		});
+		}
 	});
+}
 
-	client.on("close", function () {
-		winston.info("Client disconnected");
-	});
-
-});
-*/
 module.exports = {
-	twilioHandler: twilioHandler
+	twilioHandler: speechRecognitionUsingTwilio
 };
