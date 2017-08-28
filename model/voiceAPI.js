@@ -127,7 +127,7 @@ function speechToText(speech) {
 			.catch(error => {
 				winston.error(error);
 				//returning gibberish in order to trigger watson "didn't understand" response
-				resolve("blubbers");
+				reject(error);
 			});
 	});
 }
@@ -216,10 +216,7 @@ function downloadAudioFromURLandSaveToFile(url, id) {
 			method: "GET"
 		};
 
-		request(options, (error, request, body) => {
-			// resolve(body);
-			// console.log()
-		})
+		request(options)
 			.on("error", error => {
 				winston.error("Error ocurred while downloading audio from twilio");
 				reject(error);
@@ -244,9 +241,7 @@ function getAudioFromURL(url) {
 
 		let buffers = [];
 
-		var stream = request(options, (error, request, body) => {
-
-		})
+		var stream = request(options)
 			.on("error", error => {
 				winston.error("Error ocurred while downloading audio from twilio");
 				reject(error);

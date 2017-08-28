@@ -6,24 +6,8 @@
 
 const winston = require("../bin/logger.js"),
 	voiceAPI = require("../model/voiceAPI.js"),
-	converter = require("../model/fileConverter.js"),
-	path = require("path"),
-	fs = require("fs"),
 	conversation = require("../model/conversationAPI.js"),
 	VoiceResponse = require("twilio").twiml.VoiceResponse;
-
-let { binaryServer } = require("../bin/webServer");
-
-//Used to generate uids for clients
-function guid() {
-	function s4() {
-		return Math.floor((1 + Math.random()) * 0x10000)
-			.toString(16)
-			.substring(1);
-	}
-	return s4() + s4() + "-" + s4() + "-" + s4() + "-" +
-		s4() + "-" + s4() + s4() + s4();
-}
 
 function twilioHandler(request) {
 
