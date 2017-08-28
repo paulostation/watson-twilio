@@ -127,7 +127,7 @@ function speechToText(speech) {
 			.catch(error => {
 				winston.error(error);
 				//returning gibberish in order to trigger watson "didn't understand" response
-				reject(error);
+				resolve("blubbers");
 			});
 	});
 }

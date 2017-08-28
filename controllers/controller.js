@@ -22,7 +22,7 @@ function twilioHandler(request) {
 		if (!request.body.RecordingUrl) {
 			winston.verbose("New conversation started");
 			//new conversation, send greeting message
-			twiml.play("https://185bf826.ngrok.io/twilio/play/greeting_message.wav");
+			twiml.play("https://watson-voice-chat.mybluemix.net/twilio/play/greeting_message.wav");
 
 			twiml.record({
 				timeout: timeout
@@ -43,7 +43,6 @@ function twilioHandler(request) {
 
 			voiceAPI.getAudioFromURL(request.body.RecordingUrl, request.body.CallSid)
 				.then(audioBuffer => {
-					if()
 					return voiceAPI.speechToText(audioBuffer);
 				})
 				.then((text) => {
@@ -62,7 +61,7 @@ function twilioHandler(request) {
 				})
 				.then(result => {
 
-					twiml.play("https://185bf826.ngrok.io/twilio/play/" + result.fileName);
+					twiml.play("https://watson-voice-chat.mybluemix.net/twilio/play/" + result.fileName);
 
 					twiml.record({
 						timeout: timeout
