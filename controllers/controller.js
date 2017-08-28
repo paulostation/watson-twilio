@@ -28,6 +28,7 @@ function twilioHandler(request) {
 
 			twiml.record({
 				timeout: timeout
+
 			});
 
 			winston.log("verbose", "Creating a new clientID for the new connected client");
@@ -52,18 +53,21 @@ function twilioHandler(request) {
 
 					winston.debug("watsonResponse:", watsonResponse.output.text[0]);
 
-					return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
-				})
-				.then(result => {
-
-					twiml.play("https://" + hostname + "/twilio/play/" + result.fileName);
-
-					twiml.record({
-						timeout: timeout
-					});
+					twiml.say({
+						voice: 'woman',
+						language: "pt-BR"
+					},"teste de voz");
 
 					resolve(twiml.toString());
+
+					// return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
 				})
+				// .then(result => {
+
+					// twiml.play("https://" + hostname + "/twilio/play/" + result.fileName);
+
+					
+				// })
 				.catch(error => {
 					winston.error(error);
 					reject(error);
