@@ -47,23 +47,20 @@ function textToSpeech(text) {
 
 				let buffers = [];
 
-				var stream = request(options, (error, request, body) => {
-					winston.trace("Response from CPqD text to speech API: " + request);
-				})
+				var stream = request(options)
 					.on("error", error => {
 						winston.error("Error ocurred while querying textToSpeech API:");
 						reject(error);
 					});
 
 				stream.on("data", dataChunk => {
-					winston.trace("Downloading audio...");
 					buffers.push(dataChunk);
 				});
 
 				stream.on("end", () => {
 					//return buffer with recognized speech
 					resolve(Buffer.concat(buffers));
-					winston.trace("Finished downloading audio");
+					winston.trace("Finished downloading audio, returning buffer...");
 				});
 
 			});
@@ -98,9 +95,7 @@ function speechToText(data) {
 				pass: speechToTextServer.pass
 			},
 			body: data
-		},
-		(error, response, body) => {
-
+		}, (error, response, body) => {
 
 			if (response.statusCode !== 200) {
 				reject(new Error("Error while querying CPqD Text to speech API"));
