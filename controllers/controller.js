@@ -13,6 +13,8 @@ function twilioHandler(request) {
 
 	let timeout = 5;
 
+	let hostname = "watson-voice-chat.mybluemix.net";
+
 	return new Promise((resolve, reject) => {
 
 		// Use the Twilio Node.js SDK to build an XML response
@@ -22,7 +24,7 @@ function twilioHandler(request) {
 		if (!request.body.RecordingUrl) {
 			winston.verbose("New conversation started");
 			//new conversation, send greeting message
-			twiml.play("https://watson-voice-chat.mybluemix.net/twilio/play/greeting_message.wav");
+			twiml.play("https:// " + hostname + "/twilio/play/greeting_message.wav");
 
 			twiml.record({
 				timeout: timeout
@@ -39,7 +41,7 @@ function twilioHandler(request) {
 		}
 		else {
 
-			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
+			winston.trace("Continuing existing conversation: " + request.body.CallSid);
 
 			voiceAPI.getAudioFromURL(request.body.RecordingUrl, request.body.CallSid)
 				.then(audioBuffer => {
@@ -51,23 +53,18 @@ function twilioHandler(request) {
 				})
 				.then(watsonResponse => {
 
-					// elapsedTime = new Date().getTime() - stopWatch;
-					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
-					// winston.verbose("Generated in ", elapsedTime, "ms\n");
-
-					// stopWatch = new Date().getTime();
+					winston.debug("watsonResponse:", watsonResponse.output.text[0]);
 
 					return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
 				})
 				.then(result => {
 
-					twiml.play("https://watson-voice-chat.mybluemix.net/twilio/play/" + result.fileName);
+					twiml.play("https://" + hostname + "/twilio/play/" + result.fileName);
 
 					twiml.record({
 						timeout: timeout
 					});
 
-					// response.writeHead(200, { "Content-Type": "text/xml" });
 					resolve(twiml.toString());
 				})
 				.catch(error => {
