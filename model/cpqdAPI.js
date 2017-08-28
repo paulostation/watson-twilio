@@ -48,7 +48,7 @@ function textToSpeech(text) {
 				let buffers = [];
 
 				var stream = request(options, (error, request, body) => {
-					winston.trace("Response from CPqD text to speech API: " + body);
+					winston.trace("Response from CPqD text to speech API: " + request);
 				})
 					.on("error", error => {
 						winston.error("Error ocurred while querying textToSpeech API:");
