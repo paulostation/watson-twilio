@@ -100,14 +100,14 @@ function speechToText(data) {
 			if (response.statusCode !== 200) {
 				reject(new Error("Error while querying CPqD Text to speech API"));
 			} else {
-
+				//response body comes as string, parse it
 				body = JSON.parse(body);
-
-				winston.trace("Response from CPqD Speech to text API: " + body);
 
 				if (body.alternatives[0]) {
 
+					winston.trace("Response from CPqD Speech to text API: " + body.alternatives[0].text);
 					resolve(body.alternatives[0].text);
+
 				} else {
 
 					reject(new Error("Couldn't parse speech"));
