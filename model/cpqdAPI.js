@@ -101,8 +101,8 @@ function speechToText(data) {
 
 				winston.trace("Status code: " + response.statusCode);
 				winston.trace(body);
-				reject(new Error("Error while querying CPqD speech to text API"));\
-				
+				reject(new Error("Error while querying CPqD speech to text API"));
+
 			} else {
 				//response body comes as string, parse it
 				body = JSON.parse(body);
