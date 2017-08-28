@@ -31,7 +31,7 @@ function init() {
 					if (err)
 						reject(err);
 
-					winston.verbose("Greeting message saved at: " + greetingMessagePath);
+					winston.trace("Greeting message saved at: " + greetingMessagePath);
 
 				});
 			})

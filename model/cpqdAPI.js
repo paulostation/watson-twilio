@@ -48,7 +48,7 @@ function textToSpeech(text) {
 				let buffers = [];
 
 				var stream = request(options, (error, request, body) => {
-					resolve(body);
+					winston.trace("Response from CPqD text to speech API: " + body);
 				})
 					.on("error", error => {
 						winston.error("Error ocurred while querying textToSpeech API:");
@@ -56,13 +56,14 @@ function textToSpeech(text) {
 					});
 
 				stream.on("data", dataChunk => {
-
+					winston.trace("Downloading audio...");
 					buffers.push(dataChunk);
 				});
 
 				stream.on("end", () => {
 					//return buffer with recognized speech
 					resolve(Buffer.concat(buffers));
+					winston.trace("Finished downloading audio");
 				});
 
 			});
@@ -106,6 +107,8 @@ function speechToText(data) {
 			} else {
 
 				body = JSON.parse(body);
+
+				winston.trace("Response from CPqD Speech to text API: " + body);
 
 				if (body.alternatives[0]) {
 

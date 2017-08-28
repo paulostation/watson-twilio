@@ -5,12 +5,13 @@
 
 var winston = require("winston");
 
-winston.level = "debug";
+winston.level = "trace";
 
 module.exports = {
 	log: winston.log,
 	info: winston.info,
 	debug: winston.debug,
 	error: winston.error,
-	verbose: winston.verbose	
+	verbose: winston.verbose,
+	trace: winston.trace	
 };

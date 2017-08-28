@@ -14,12 +14,11 @@ function talk(text, clientId) {
 
 		watsonConversation.talk(text, clientId)
 			.then(response => {
-				winston.debug("Response from watson conversation API: ", response);
+				winston.trace("Response from watson conversation API: ", response);
 				resolve(response);
 
 			}).catch(error => {
 				winston.error("Error while calling watson conversation api", error);
-
 			});
 	});
 }
