@@ -45,7 +45,7 @@ function speechRecognitionUsingCPqD(request) {
 			twiml.record({
 				timeout: timeout
 			});
-			
+
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
 			conversation.talk("", request.body.CallSid);
@@ -123,16 +123,26 @@ function speechRecognitionUsingTwilio(request) {
 
 		}
 		else {
+
 			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
 
-			if (request.body.SpeechResult) {
-				conversation.talk(request.body.SpeechResult, request.body.CallSid)
-					.then(watsonResponse => {
+			conversation.talk(request.body.SpeechResult, request.body.CallSid)
+				.then(watsonResponse => {
 
-						// elapsedTime = new Date().getTime() - stopWatch;
-						winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
-						const response = new VoiceResponse();
+					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
+					const response = new VoiceResponse();
 
+					if (watsonResponse.context.encerramento) {
+
+						response.say(
+							{
+								voice: "woman",
+								language: "pt-BR",
+							},
+							watsonResponse.output.text[0]
+						);
+
+					} else {
 						const gather = response.gather({
 							input: "speech",
 							timeout: 5,
@@ -145,13 +155,14 @@ function speechRecognitionUsingTwilio(request) {
 							voice: "man",
 							language: "pt-BR"
 						}, watsonResponse.output.text[0]);
+					}
 
-						resolve(response.toString());
-					})
-					.catch(error => {
-						reject(error);
-					});
-			}
+					resolve(response.toString());
+				})
+				.catch(error => {
+					reject(error);
+				});
+
 
 
 		}
