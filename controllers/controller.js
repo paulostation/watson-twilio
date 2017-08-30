@@ -86,12 +86,14 @@ function speechRecognitionUsingCPqD(request) {
 
 function speechRecognitionUsingTwilio(request) {
 
-	let timeout = 3;
+	let speechStartTimeout = 3;
+	let speechEndTimeout = 1;
+
 
 	return new Promise((resolve, reject) => {
 
 		// Use the Twilio Node.js SDK to build an XML response
-		const twiml = new VoiceResponse();
+		const VoiceResponse = require("twilio").twiml.VoiceResponse;
 
 		//if SpeechResult not found, then call just started
 		if (!request.body.SpeechResult) {
@@ -99,30 +101,29 @@ function speechRecognitionUsingTwilio(request) {
 
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
-			conversation.talk("", request.body.CallSid);
+			conversation.talk("", request.body.CallSid)
+				.then(watsonResponse => {
+					const response = new VoiceResponse();
+					const gather = response.gather({
+						input: "speech",
+						timeout: speechStartTimeout,
+						speechTimeout: speechEndTimeout,
+						language: "pt-BR"
+					});
 
+					//new conversation, send greeting message
+					gather.say({
+						language: "pt-BR",
+						voice: "man"
+					}, watsonResponse.output.text[0]);
 
-			const VoiceResponse = require("twilio").twiml.VoiceResponse;
-
-			const response = new VoiceResponse();
-			const gather = response.gather({
-				input: "speech",
-				timeout: 5,
-				speechTimeout: 1,
-				numDigits: 1,
-				language: "pt-BR"
-			});
-
-			//new conversation, send greeting message
-			gather.say({
-				language: "pt-BR",
-				voice: "man"
-			}, "Olá, sou o Watson, seu assistente cognitivo. Como posso te ajudar?");
-
-			resolve(response.toString());
-
-		}
-		else {
+					resolve(response.toString());
+				})
+				.catch(error => {
+					winston.error(error);
+					reject(error);
+				});
+		} else {
 
 			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
 
@@ -145,14 +146,13 @@ function speechRecognitionUsingTwilio(request) {
 					} else {
 						const gather = response.gather({
 							input: "speech",
-							timeout: 5,
-							speechTimeout: 1,
-							numDigits: 1,
+							timeout: speechStartTimeout,
+							speechTimeout: speechEndTimeout,
 							language: "pt-BR"
 						});
 
 						gather.say({
-							voice: "man",
+							voice: "woman",
 							language: "pt-BR"
 						}, watsonResponse.output.text[0]);
 					}
