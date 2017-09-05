@@ -9,18 +9,6 @@ const winston = require("../bin/logger.js"),
 	conversation = require("../model/conversationAPI.js"),
 	VoiceResponse = require("twilio").twiml.VoiceResponse;
 
-
-//Used to generate uids for clients
-function guid() {
-	function s4() {
-		return Math.floor((1 + Math.random()) * 0x10000)
-			.toString(16)
-			.substring(1);
-	}
-	return s4() + s4() + "-" + s4() + "-" + s4() + "-" +
-		s4() + "-" + s4() + s4() + s4();
-}
-
 function speechRecognitionUsingCPqD(request) {
 
 	let timeout = 5;
@@ -32,15 +20,13 @@ function speechRecognitionUsingCPqD(request) {
 		// Use the Twilio Node.js SDK to build an XML response
 		const twiml = new VoiceResponse();
 
-		console.log(request.body);
-
 		//if RecordingUrl not found, then call just started
 		if (!request.body.RecordingUrl) {
 
 			winston.verbose("New conversation started");
 
 			//new conversation, send greeting message			
-			twiml.play("https://185bf826.ngrok.io/twilio/play/greeting_message.wav");
+			twiml.play("https://" + hostname + "/twilio/play/greeting_message.wav");
 
 			twiml.record({
 				timeout: timeout
@@ -119,7 +105,7 @@ function speechRecognitionUsingTwilio(request) {
 					}, watsonResponse.output.text[0]);
 
 					winston.verbose("Greeting message: ", watsonResponse.output.text[0]);
-					
+
 					resolve(response.toString());
 				})
 				.catch(error => {
@@ -178,5 +164,6 @@ function speechRecognitionUsingTwilio(request) {
 }
 
 module.exports = {
-	twilioHandler: speechRecognitionUsingTwilio
+	twilioHandler: speechRecognitionUsingTwilio,
+	cpqdHandler: speechRecognitionUsingCPqD
 };
