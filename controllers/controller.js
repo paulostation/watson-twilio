@@ -97,6 +97,7 @@ function speechRecognitionUsingTwilio(request) {
 
 		//if SpeechResult not found, then call just started
 		if (!request.body.SpeechResult) {
+
 			winston.verbose("New conversation started");
 
 			winston.log("verbose", "Creating a new clientID for the new connected client");
@@ -117,6 +118,8 @@ function speechRecognitionUsingTwilio(request) {
 						voice: "man"
 					}, watsonResponse.output.text[0]);
 
+					winston.verbose("Greeting message: ", watsonResponse.output.text[0]);
+					
 					resolve(response.toString());
 				})
 				.catch(error => {
@@ -125,7 +128,8 @@ function speechRecognitionUsingTwilio(request) {
 				});
 		} else {
 
-			winston.verbose("Continuing existing conversation: " + request.body.CallSid);
+			winston.trace("Continuing existing conversation: " + request.body.CallSid);
+			winston.verbose("Message from client: ", request.body.SpeechResult);
 
 			conversation.talk(request.body.SpeechResult, request.body.CallSid)
 				.then(watsonResponse => {
@@ -144,6 +148,8 @@ function speechRecognitionUsingTwilio(request) {
 							},
 							watsonResponse.output.text[0]
 						);
+
+						winston.verbose("Conversation finished");
 
 					} else {
 
@@ -167,9 +173,6 @@ function speechRecognitionUsingTwilio(request) {
 				.catch(error => {
 					reject(error);
 				});
-
-
-
 		}
 	});
 }
