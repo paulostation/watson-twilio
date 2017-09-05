@@ -135,6 +135,8 @@ function speechRecognitionUsingTwilio(request) {
 
 					if (watsonResponse.context.encerramento) {
 
+						winston.silly("Reached conversation finishing node. Telling twilio to finish conversation.");
+
 						response.say(
 							{
 								voice: "woman",
@@ -144,6 +146,9 @@ function speechRecognitionUsingTwilio(request) {
 						);
 
 					} else {
+
+						winston.silly("Not a conversation finishing node.");
+
 						const gather = response.gather({
 							input: "speech",
 							timeout: speechStartTimeout,

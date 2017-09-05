@@ -15,6 +15,14 @@ function talk(text, clientId) {
 		watsonConversation.talk(text, clientId)
 			.then(response => {
 				winston.trace("Response from watson conversation API: ", response);
+
+				let newOutput = "";
+				//concatenate all responses in one
+				response.output.text.forEach(output => {
+					newOutput += output;
+				});
+				response.output.text[0] = newOutput;
+
 				resolve(response);
 
 			}).catch(error => {
