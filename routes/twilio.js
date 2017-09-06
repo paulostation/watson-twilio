@@ -14,15 +14,13 @@ router.get("/play/:hashname", (req, res) => {
 
 // Create a route that will handle Twilio webhook requests, sent as an
 // HTTP POST to /voice in our application
-router.post("/start", (request, response) => {
+router.post("/start", (request, response, next) => {
 
 	twilioHandler(request)
 		.then(result => {
 			response.send(result);
 		})
-		.catch(error => {
-			response.status(500).send(error);
-		});
+		.catch(next);
 });
 
 module.exports = router;

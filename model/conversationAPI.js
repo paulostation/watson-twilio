@@ -11,7 +11,7 @@ const winston = require("../bin/logger.js");
 function talk(text, clientId) {
 
 	return new Promise((resolve, reject) => {
-
+		
 		watsonConversation.talk(text, clientId)
 			.then(response => {
 				winston.trace("Response from watson conversation API: ", response);

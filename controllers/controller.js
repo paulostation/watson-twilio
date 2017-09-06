@@ -12,7 +12,7 @@ const winston = require("../bin/logger.js"),
 function speechRecognitionUsingCPqD(request) {
 
 	let timeout = 5;
-
+	//TODO : fazer something 
 	let hostname = "watson-voice-chat.mybluemix.net";
 
 	return new Promise((resolve, reject) => {
