@@ -124,6 +124,12 @@ function speechToText(data) {
 	});
 }
 
+function speechToTextUsingWS(stream) {
+	return new Promise((resolve, reject) => {
+		
+	}); 
+}
+
 module.exports = {
 	textToSpeech: textToSpeech,
 	speechToText: speechToText

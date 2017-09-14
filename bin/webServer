@@ -10,7 +10,9 @@ var debug = require("debug")("app:server");
 var http = require("http");
 
 const voiceAPI = require("../model/voiceAPI.js"),
-	winston = require("./logger.js");
+	winston = require("./logger.js"),
+	{ BinaryServer } = require("binaryjs");
+
 
 /**
 * Get port from environment and store in Express.
@@ -31,19 +33,25 @@ server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
-voiceAPI.init()
-	.then(() => {
-		winston.info("Voice API initialization done");
-		//initialize controller
-		require("../controllers/controller.js");
-	})
-	.catch(error => {
+var startWS = require("../model/ASRClient.js");
 
-		winston.error("Error while starting web server.");
-		winston.error(error);
-		process.exit(1);
+// voiceAPI.init()
+// 	.then(() => {
+// 		winston.info("Voice API initialization done");
+// 		module.exports.binaryServer = BinaryServer({ port: 9001 });
+// 		winston.info("BinaryServer started on port 9001");
+// 		//initate web sockets controller
+// 		require("../controllers/wsController.js");
+// 		//initialize HTTP controller
+// 		require("../controllers/controller.js");
+// 	})
+// 	.catch(error => {
 
-	});
+// 		winston.error("Error while starting web server.");
+// 		winston.error(error);
+// 		process.exit(1);
+
+// 	});
 
 /**
 * Normalize a port into a number, string, or false.

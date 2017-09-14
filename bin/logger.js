@@ -5,7 +5,7 @@
 
 var winston = require("winston");
 
-winston.level = "verbose";
+winston.level = "silly";
 winston.info("Winston is using " + winston.level + " logger level");
 
 module.exports = {

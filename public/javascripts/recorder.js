@@ -145,15 +145,18 @@
 
 			// Display new data in browser!
 			audio.src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
-
+			
 			audio.play();
 
 			audio.onended = () => {
+				console.log("Finished playing audio");
 				setTimeout( () => {
 					isSpeakingHandler = setInterval(isSpeaking, 50);
 				}, 250);
 				
 			};	
+
+			window.Stream = client.createStream();
 
 		});
 	});
