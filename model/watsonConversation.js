@@ -27,14 +27,11 @@ function talk(text, clientId) {
 				input: {
 					text: text
 				}
-			},
-			(err, response) => {
+			}, (err, response) => {
 
 				if (err) {
 					reject(err);
-				}
-
-				if (response.context) {
+				} else if (response.context) {
 
 					clientContextArray[clientId] = response.context;
 					resolve(response);
@@ -51,8 +48,7 @@ function talk(text, clientId) {
 					text: text
 				},
 				context: clientContextArray[clientId]
-			},
-			(err, response) => {
+			}, (err, response) => {
 
 				if (err) {
 					reject(err);
