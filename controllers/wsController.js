@@ -14,28 +14,59 @@ const winston = require("../bin/logger.js"),
 
 let { binaryServer } = require("../bin/webServer");
 
-let requestNumber = 0;
 
+// let asrClient = new ASRClient("ws://9.18.180.254:8025/asr-server/asr");
 
+// asrClient.connect();
+
+// asrClient.on("connected", () => {
+
+// 	asrClient.createSession();
+// });
+
+// asrClient.on("ready", () => {
+
+// });
+
+// asrClient.on("error", error => {
+// 	winston.error("ASR Client error:");
+// 	winston.error(error);
+// });
 
 binaryServer.on("connection", function (client) {
 
 	winston.verbose("New client connected");
 
-	client.ASRClient = new ASRClient()
-		.connect()
-		.then(connected => {
-			//when client connects, send him the greeting message from voice API
-			client.send(voiceAPI.greetingMessage);
+	client.ASRClient = new ASRClient("ws://9.18.180.254:8025/asr-server/asr");
 
-			if (!client._id) {
-				winston.log("verbose", "Creating a new clientID for the new connected client");
-				client._id = guid();
-				conversation.talk("", client._id);
+	client.ASRClient.connect();
 
-			}
-		})
+	client.ASRClient.on("connected", () => {
 
+		client.ASRClient.createSession();
+	});
+
+	client.ASRClient.on("error", error => {
+		winston.error("ASR Client error:");
+		winston.error(error);
+	});
+
+	client.ASRClient.on("ready", () => {
+
+		if (!client._id) {
+			winston.log("verbose", "Creating a new clientID for the new connected client");
+			client._id = guid();
+			conversation.talk("", client._id)
+		}
+
+		//when client connects, send him the greeting message from voice API
+		client.send(voiceAPI.greetingMessage);
+
+	});
+
+
+
+	winston.silly("Ready to listen for client connections");
 
 	client.on("stream", function (stream, meta) {
 
@@ -45,10 +76,10 @@ binaryServer.on("connection", function (client) {
 
 		stream.pipe(fs.createWriteStream(absolutePath));
 
-		let buffers = [];
 
-		stream.on("data", data => {
-			client.ASRClient.send(data);
+		stream.on("data", audioChunk => {
+
+			client.ASRClient.sendAudio(audioChunk);
 
 		});
 
@@ -56,7 +87,7 @@ binaryServer.on("connection", function (client) {
 
 			winston.verbose("stream ended");
 
-			winston.info("file written");
+			// winston.info("file written");
 			// fileWriter.end();
 			var stopWatch = new Date().getTime();
 			var start = stopWatch;
@@ -112,6 +143,10 @@ binaryServer.on("connection", function (client) {
 
 		});
 	});
+
+
+
+
 
 	client.on("close", function () {
 		winston.verbose("Client disconnected");
