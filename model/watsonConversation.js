@@ -5,20 +5,24 @@
  */
 
 const ConversationV1 = require("watson-developer-cloud/conversation/v1"),
+	config = require("../config/watsonService.json"),
 	winston = require("../bin/logger.js");
 
-
+//array where the 
 let clientContextArray = {};
 
 // Set up Conversation service wrapper.
 const conversation = new ConversationV1({
-	username: "8b4bae75-b2f7-4aea-95c6-1df6de847f1c", // replace with username from service key
-	password: "eTCTE34Y6TG5", // replace with password from service key
-	path: { workspace_id: "974658f1-1649-4a52-92d5-4253313cc800" }, // replace with workspace ID
-	version_date: "2016-07-11"
+	username: config.username,
+	password: config.password,
+	version_date: config.version_date
 });
 
-function talk(text, clientId) {
+let workspaces = config.workspaces;
+
+function talk(text, clientId, workspace_name) {
+
+	let workspace_id = workspaces[workspace_name];
 
 	return new Promise((resolve, reject) => {
 		//If user input is empty, start a new conversation and store it in the client context array
@@ -26,7 +30,8 @@ function talk(text, clientId) {
 			conversation.message({
 				input: {
 					text: text
-				}
+				},
+				workspace_id: workspace_id
 			}, (err, response) => {
 
 				if (err) {
@@ -47,7 +52,8 @@ function talk(text, clientId) {
 				input: {
 					text: text
 				},
-				context: clientContextArray[clientId]
+				context: clientContextArray[clientId],
+				workspace_id: workspace_id
 			}, (err, response) => {
 
 				if (err) {

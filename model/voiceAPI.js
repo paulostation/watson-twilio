@@ -14,7 +14,7 @@ function init() {
 
 	return new Promise((resolve, reject) => {
 
-		conversation.talk("", "greeting_message")
+		conversation.talk("", "greeting_message", "telco")
 			.then(response => {
 				return cpqdAPI.textToSpeech(response.output.text[0]);
 			})

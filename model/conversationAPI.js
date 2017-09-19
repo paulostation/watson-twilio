@@ -8,11 +8,11 @@ var watsonConversation = require("./watsonConversation.js");
 
 const winston = require("../bin/logger.js");
 
-function talk(text, clientId) {
+function talk(text, clientId, workspace_name) {
 
 	return new Promise((resolve, reject) => {
 		
-		watsonConversation.talk(text, clientId)
+		watsonConversation.talk(text, clientId, workspace_name)
 			.then(response => {
 				winston.trace("Response from watson conversation API: ", response);
 

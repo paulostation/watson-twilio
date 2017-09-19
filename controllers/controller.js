@@ -1,5 +1,5 @@
 /** 
- * This file handles websocket connections from the client
+ * This file handles HTTP REST connections from the client
  * @module controller
  * @author Paulo Henrique <pauloh@br.ibm.com>   
  */
@@ -8,8 +8,6 @@ const winston = require("../bin/logger.js"),
 	voiceAPI = require("../model/voiceAPI.js"),
 	conversation = require("../model/conversationAPI.js"),
 	VoiceResponse = require("twilio").twiml.VoiceResponse;
-
-
 
 function speechRecognitionUsingCPqD(request) {
 
@@ -76,8 +74,8 @@ function speechRecognitionUsingTwilio(request) {
 
 	let speechStartTimeout = 3;
 	let speechEndTimeout = 1;
-
-
+	let workspace_name = request.params.workspace_name;
+	
 	return new Promise((resolve, reject) => {
 
 		// Use the Twilio Node.js SDK to build an XML response
@@ -90,7 +88,7 @@ function speechRecognitionUsingTwilio(request) {
 
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 
-			conversation.talk("", request.body.CallSid)
+			conversation.talk("", request.body.CallSid, workspace_name)
 				.then(watsonResponse => {
 					const response = new VoiceResponse();
 					const gather = response.gather({
@@ -119,7 +117,7 @@ function speechRecognitionUsingTwilio(request) {
 			winston.trace("Continuing existing conversation: " + request.body.CallSid);
 			winston.verbose("Message from client: ", request.body.SpeechResult);
 
-			conversation.talk(request.body.SpeechResult, request.body.CallSid)
+			conversation.talk(request.body.SpeechResult, request.body.CallSid, workspace_name)
 				.then(watsonResponse => {
 
 					winston.verbose("watsonResponse:", watsonResponse.output.text[0]);
