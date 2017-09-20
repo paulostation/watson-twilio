@@ -14,23 +14,23 @@ const winston = require("../bin/logger.js"),
 
 let { binaryServer } = require("../bin/webServer");
 
-let wsClient = new ASRClient("ws://9.18.180.254:8025/asr-server/asr");
+// let wsClient = new ASRClient("ws://9.18.180.254:8025/asr-server/asr");
 
-wsClient.connect();
+// wsClient.connect();
 
-wsClient.on("connected", () => {
-	console.log("Connected");
-});
+// wsClient.on("connected", () => {
+// 	console.log("Connected");
+// });
 
-wsClient.on("ready", () => {
-	// fs.readFile(path.join(__dirname, "../audio/audio_client.raw"), (err, data) => {
-	// 	if(err) console.error(err);
-	// 	else {
-	// 		wsClient.sendAudio(data);
-	// 	}
-	// });
-	console.log("my body is ready");
-});
+// wsClient.on("ready", () => {
+// 	fs.readFile(path.join(__dirname, "../audio/greeting_message.wav"), (err, data) => {
+// 		if(err) console.error(err);
+// 		else {
+// 			wsClient.sendAudio(data);
+// 		}
+// 	});
+// 	console.log("my body is ready");
+// });
 
 binaryServer.on("connection", function (client) {
 
@@ -42,54 +42,9 @@ binaryServer.on("connection", function (client) {
 
 	client.ASRClient.connect();
 
-	client.ASRClient.on("connected", () => {
-
-		client.ASRClient.createSession();
-
-	});
-
 	client.ASRClient.on("error", error => {
 		winston.error("ASR Client error:");
 		winston.error(error);
-	});
-
-	client.ASRClient.on("response", response => {
-
-		winston.silly("Response arrived from ASR Server");
-		winston.silly(response);
-
-		let stopWatch, elapsedTime, start;
-
-		// conversation.talk(response, this._id, "telco")								
-		// 	.then(watsonResponse => {
-
-		// 		context = watsonResponse.context;
-		// 		elapsedTime = new Date().getTime() - stopWatch;
-		// 		console.log("watsonResponse:", watsonResponse.output.text[0]);
-		// 		console.log("Watson query ran in ", elapsedTime, "ms\n");
-
-		// 		stopWatch = new Date().getTime();
-
-		// 		return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
-		// 	})
-		// 	.then(audioFile => {
-
-		// 		elapsedTime = new Date().getTime() - stopWatch;
-		// 		let totalElapsedTime = new Date().getTime() - start;
-
-		// 		console.log("Speech generated in", elapsedTime, "ms");
-
-		// 		console.log();
-		// 		console.log();
-		// 		console.log("totalElapsedTime:", totalElapsedTime, "ms");
-		// 		console.log();
-		// 		client.send(audioFile.audioBuffer);
-		// 		winston.verbose("Stream sent to the client");
-		// 	})
-		// 	.catch(error => {
-		// 		console.log(error);
-		// 	});
-
 	});
 
 	client.ASRClient.on("ready", () => {
@@ -97,6 +52,7 @@ binaryServer.on("connection", function (client) {
 		if (!client._id) {
 			winston.log("verbose", "Creating a new clientID for the new connected client");
 			client._id = guid();
+			//create context for the new conversation
 			conversation.talk("", client._id, "telco")
 				.then(watsonResponse => {
 					context = watsonResponse.context;
@@ -122,78 +78,32 @@ binaryServer.on("connection", function (client) {
 
 			});
 
-			stream.on("end", () => {
 
-				winston.verbose("stream ended");
-
-				// winston.info("file written");
-				// fileWriter.end();
-				var stopWatch = new Date().getTime();
-				var start = stopWatch;
-				let elapsedTime;
-
-				// converter.resampleTo8KHz(absolutePath)
-				// .then(audioFilePath => {
-
-				// elapsedTime = new Date().getTime() - stopWatch;
-				// console.log("Audio file converted in", elapsedTime, "ms");
-				// stopWatch = new Date().getTime();
-				// return voiceAPI.speechToText(audioFilePath);
-				// })
-				// voiceAPI.speechToText(Buffer.concat(buffers))
-				// 	.then(userInput => {
-
-				// 		elapsedTime = new Date().getTime() - stopWatch;
-				// 		console.log();
-				// 		console.log("Parsed speech to text in", elapsedTime, "ms");
-				// 		console.log("User input: ", userInput);
-				// 		stopWatch = new Date().getTime();
-
-				// 		return conversation.talk(userInput, this._id);
-				// 	})
-				// 	.then(watsonResponse => {
-
-				// 		context = watsonResponse.context;
-				// 		elapsedTime = new Date().getTime() - stopWatch;
-				// 		console.log("watsonResponse:", watsonResponse.output.text[0]);
-				// 		console.log("Watson query ran in ", elapsedTime, "ms\n");
-
-				// 		stopWatch = new Date().getTime();
-
-				// 		return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
-				// 	})
-				// 	.then(audioFile => {
-
-				// 		elapsedTime = new Date().getTime() - stopWatch;
-				// 		let totalElapsedTime = new Date().getTime() - start;
-
-				// 		console.log("Speech generated in", elapsedTime, "ms");
-
-				// 		console.log();
-				// 		console.log();
-				// 		console.log("totalElapsedTime:", totalElapsedTime, "ms");
-				// 		console.log();
-				// client.send(audioFile.audioBuffer);
-				// 		winston.verbose("Stream sent to the client");
-				// 	})
-				// 	.catch(error => {
-				// 		console.log(error);
-				// 	});
-
-			});
+			
 		});
 
 
 	});
 
+	client.ASRClient.on("response", userInput => {
+	
+		console.log("response from ASR CLient:",userInput);
 
+		conversation.talk(userInput, this._id, "telco")
 
+			.then(watsonResponse => {
 
-
-
-
-
-
+				return voiceAPI.textToSpeech(watsonResponse.output.text[0]);
+			})
+			.then(audioFile => {
+				
+				client.send(audioFile.audioBuffer);
+				winston.verbose("Stream sent to the client");
+			})
+			.catch(error => {
+				winston.error(error);
+			});
+	});
 
 	client.on("close", function () {
 		winston.verbose("Client disconnected");

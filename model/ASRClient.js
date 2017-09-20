@@ -3,7 +3,7 @@ const WebSocketClient = require("ws"),
 	events = require("events"),
 	parser = require("./CPqDASRParser"),
 	ASRconstants = require("./CPqDASRConstants"),
-	Stream = require("stream"),	
+	Stream = require("stream"),
 	winston = require("../bin/logger.js");
 
 function ASRClient(host) {
@@ -15,10 +15,11 @@ function ASRClient(host) {
 	this.stream = new Stream();
 	//client functions
 	this.createSession = createSession;
-	this.startRecognition = startRecognition;
+	this.releaseSession = releaseSession;
+	this.startRecognition = startRecognition;k
 	this.connect = connect;
 	this.sendAudio = sendAudio;
-	this.errorHandler = errorHandler;
+	// this.errorHandler = errorHandler;
 
 	//copy all of the EventEmitter properties to the Door object.
 	events.EventEmitter.call(this);
@@ -30,7 +31,8 @@ function ASRClient(host) {
 ASRClient.prototype.__proto__ = events.EventEmitter.prototype;
 //default error handler for ASR Client
 function errorHandler(error) {
-	this.emit("error", error);
+	winston.error(error);
+	// this.emit("error", error);
 }
 
 function connect() {
@@ -50,8 +52,13 @@ function connect() {
 			this.emit("connected");
 			//after connection, create session
 			this.createSession()
-				.then(result => {
-					console.log("Session created");
+				.then(() => {
+					this.emit("sessionCreated");
+					return this.startRecognition();
+				})
+				.then(() => {
+					this.state = ASRconstants.STATE.READY;
+					this.emit("ready");
 				})
 				.catch(errorHandler);
 
@@ -67,17 +74,35 @@ function connect() {
 			parser.parseResponse(message)
 				.then(result => {
 
-					switch (result) {
-					case ASRconstants.RESULT_STATUS.NO_SPEECH:
-						this.emit("response", "No speech detected");
-						break;
-					case ASRconstants.RESULT_STATUS.MAX_SPEECH:
-						this.emit("response", result);
-						break;
-					default:
-						winston.silly(result);
-						this.emit("response", "blubbers");
-						break;
+					switch (result.result) {
+						case ASRconstants.RESULT_STATUS.NO_SPEECH:
+							this.emit("response", "No speech detected");
+							break;
+						case ASRconstants.RESULT_STATUS.MAX_SPEECH:
+							this.emit("response", result);
+							break;
+						case ASRconstants.RESULT_STATUS.RECOGNIZED:
+							//parse and return response
+							let jsonResponse = JSON.parse(result.jsonResponse);
+							this.emit("response", jsonResponse.alternatives[0].text);
+							//create a new session for the next recognition
+							this.releaseSession()
+								.then(() => {
+									return this.createSession();
+								})
+								.then(() => {
+									winston.silly("Uhull, criou outra sessão");
+									return this.startRecognition();
+								})
+								.then(() => {
+									winston.silly("Uhull, tá reconhecendo");
+								})
+								.catch(errorHandler);
+							break;
+						default:
+							winston.silly("Outside switch case: ");
+							winston.silly(result);
+							break;
 					}
 
 				})
@@ -86,7 +111,7 @@ function connect() {
 					this.emit(error);
 				});
 		})
-		.on("error", this.errorHandler);
+		.on("error", errorHandler);
 }
 
 function createSession() {
@@ -112,19 +137,16 @@ function createSession() {
 
 						winston.silly("Session created sucessfully");
 						resolve(true);
-
-						this.state = ASRconstants.STATE.READY;
-						this.emit("ready");
 					}
 				})
-				.catch(this.errorHandler);
+				.catch(errorHandler);
 
 		});
 
 		this.wsClient.send(util.toUTF8Array(item), function ack(error) {
 
 			if (error) {
-				this.errorHandler(error);
+				errorHandler(error);
 			} else {
 				winston.silly("Data sent to ASR Server:\n", item);
 			}
@@ -141,6 +163,7 @@ function startRecognition() {
 
 		var item = ASRconstants.PRODUCT + " " + ASRconstants.VERSION + " " + ASRconstants.WS_COMMANDS.START_RECOGNITION + ASRconstants.ENTER;
 		item += "Content-Length: " + body.length + ASRconstants.ENTER;
+		body += "NoInputTimeout: " + ASRconstants.NO_INPUT_TIMEOUT + ASRconstants.ENTER;
 		item += "Content-Type: text/uri-list" + ASRconstants.ENTER + ASRconstants.ENTER;
 		item += body;
 
@@ -150,16 +173,15 @@ function startRecognition() {
 
 			parser.parseResponse(message)
 				.then(result => {
-					console.log(result);
-					if (result.method === ASRconstants.WS_COMMANDS.CREATE_SESSION
+
+					if (result.method === ASRconstants.WS_COMMANDS.START_RECOGNITION
 						&& result.result === ASRconstants.WS_RESPONSE_RESULTS.SUCCESS
-						&& result.status === ASRconstants.SESSION_STATUS.IDLE) {
+						&& result.status === ASRconstants.SESSION_STATUS.LISTENING) {
 
-						winston.silly("Session created sucessfully");
+						winston.silly("Session created sucessfully, listening for audio data for 60 seconds");
 						resolve(true);
-
-						this.state = ASRconstants.STATE.READY;
-						this.emit("ready");
+					} else {
+						reject(false);
 					}
 				})
 				.catch(error => {
@@ -168,14 +190,16 @@ function startRecognition() {
 
 
 
-			this.wsClient.send(util.toUTF8Array(item), function ack(error) {
 
-				if (error) {
-					this.errorHandler(error);
-				} else {
-					winston.silly("Data sent to ASR Server:\n", item);
-				}
-			});
+		});
+
+		this.wsClient.send(util.toUTF8Array(item), function ack(error) {
+
+			if (error) {
+				errorHandler(error);
+			} else {
+				winston.silly("Data sent to ASR Server:\n", item);
+			}
 		});
 	});
 }
@@ -190,13 +214,6 @@ function sendAudio(data) {
 			return;
 		}
 
-		if (this.state != ASRconstants.STATE.RECOGNIZING) {
-			this.startRecognition()
-				.then(result => {
-
-				});
-		}
-
 		var item = ASRconstants.PRODUCT + " " + ASRconstants.VERSION + " " + ASRconstants.WS_COMMANDS.SEND_AUDIO + ASRconstants.ENTER;
 		item += "LastPacket: " + (data.length < 65536) + ASRconstants.ENTER;
 		item += "Content-Length: " + data.length + ASRconstants.ENTER;
@@ -209,25 +226,63 @@ function sendAudio(data) {
 
 		buffer = Buffer.concat(buffer);
 
+		// this.wsClient.once("message", message => {
+
+		// 	message = message.toString();
+
+		// 	winston.silly("data received from server:");
+
+		// 	winston.silly(message);
+
+		// });
+
+		this.wsClient.send(buffer, function ack(error) {
+
+			if (error) {
+				errorHandler(error);
+			} else {
+				winston.silly("Data sent to ASR Server:\n", item);
+			}
+		});
+	});
+}
+
+function releaseSession() {
+
+	return new Promise((resolve, reject) => {
+
+		var item = ASRconstants.PRODUCT + " " + ASRconstants.VERSION + " " + ASRconstants.WS_COMMANDS.RELEASE_SESSION + ASRconstants.ENTER;
+
 		this.wsClient.once("message", message => {
 
 			message = message.toString();
 
-			winston.silly("data received from server:");
+			parser.parseResponse(message)
+				.then(result => {
+					console.log(result);
+					if (result.method === ASRconstants.WS_COMMANDS.RELEASE_SESSION
+						&& result.result === ASRconstants.WS_RESPONSE_RESULTS.SUCCESS) {
 
-			winston.silly(message);
+						winston.silly("Session released sucessfully.");
+						resolve(true);
+					}
+				})
+				.catch(error => {
+					reject(error);
+				});
 
 		});
 
 		this.wsClient.send(util.toUTF8Array(item), function ack(error) {
 
 			if (error) {
-				this.errorHandler(error);
+				errorHandler(error);
 			} else {
 				winston.silly("Data sent to ASR Server:\n", item);
 			}
 		});
 	});
+
 }
 
 module.exports = ASRClient;

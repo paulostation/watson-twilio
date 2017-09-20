@@ -48,7 +48,7 @@ function prepareRecognitionResult(arrValues) {
 		if (value.indexOf("[{") != -1) { //json contendo as sentencas identificadas
 
 			objRecognitionResult.jsonResponse = value;
-			console.log(value);
+			
 		}
 	});
 	return objRecognitionResult;
