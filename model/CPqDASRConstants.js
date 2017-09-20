@@ -34,6 +34,14 @@ module.exports.WS_RESPONSE_RESULTS = {
 	INVALID_ACTION: "INVALID_ACTION"
 };
 
+module.exports.SESSION_STATUS = {
+	CONNECTED: "CONNECTED",
+	IDLE: "IDLE",
+	LISTENING: "LISTENING",
+	RECOGNIZING: "ASR_RECOGNIZING",
+	OFFLINE: "OFFLINE" //status local apenas. para indicar que não há uma conexão com o servidor no momento
+};
+
 module.exports.RESULT_STATUS = {
 	NONE: "NONE",
 	PROCESSING: "PROCESSING",

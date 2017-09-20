@@ -28,7 +28,7 @@ var server = http.createServer(app);
 // Create a BinaryServer attached to our existing server
 module.exports.binaryServer = new BinaryServer({
 	port: 9001,	
-	chunkSize: 4096
+	chunkSize: 2048
 });
 
 /**

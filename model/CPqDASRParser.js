@@ -60,32 +60,32 @@ function validateResponse(arrValues) {
 
 
 		var objResponse = prepareResponse(arrValues);
-
-		if (isResponseSuccessfull(objResponse.result)) {
-			switch (objResponse.method) {
-				case ASRconstants.WS_COMMANDS.CREATE_SESSION:
-					resolve(true);
-					break;
-				case ASRconstants.WS_COMMANDS.START_RECOGNITION:
-					resolve(true);
-					break;
-				case ASRconstants.WS_COMMANDS.SEND_AUDIO:
-					this.emit("validResponse");
-					break;
-				case ASRconstants.WS_COMMANDS.CANCEL_RECOGNITION:
-					this.emit("validResponse");
-					break;
-				case ASRconstants.WS_COMMANDS.RELEASE_SESSION:
-					this.emit("validResponse");
-					break;
-				case ASRconstants.WS_COMMANDS.GET_SESSION_STATUS:
-					this.emit("validResponse");
-					break;
-			}
-		}
-		else {
-			reject(new Error("Invalid response: " + objResponse.result));
-		}
+		resolve(objResponse);
+		// if (isResponseSuccessfull(objResponse.result)) {
+		// 	switch (objResponse.method) {
+		// 		case ASRconstants.WS_COMMANDS.CREATE_SESSION:
+		// 			resolve(true);
+		// 			break;
+		// 		case ASRconstants.WS_COMMANDS.START_RECOGNITION:
+		// 			resolve(true);
+		// 			break;
+		// 		case ASRconstants.WS_COMMANDS.SEND_AUDIO:
+		// 			this.emit("validResponse");
+		// 			break;
+		// 		case ASRconstants.WS_COMMANDS.CANCEL_RECOGNITION:
+		// 			this.emit("validResponse");
+		// 			break;
+		// 		case ASRconstants.WS_COMMANDS.RELEASE_SESSION:
+		// 			this.emit("validResponse");
+		// 			break;
+		// 		case ASRconstants.WS_COMMANDS.GET_SESSION_STATUS:
+		// 			this.emit("validResponse");
+		// 			break;
+		// 	}
+		// }
+		// else {
+		// 	reject(new Error("Invalid response: " + objResponse.result));
+		// }
 
 	});
 }
