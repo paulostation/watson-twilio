@@ -75,7 +75,7 @@ function speechRecognitionUsingTwilio(request) {
 	let speechStartTimeout = 3;
 	let speechEndTimeout = 1;
 	let workspace_name = request.params.workspace_name;
-	
+
 	return new Promise((resolve, reject) => {
 
 		// Use the Twilio Node.js SDK to build an XML response
@@ -137,7 +137,24 @@ function speechRecognitionUsingTwilio(request) {
 
 						winston.verbose("Conversation finished");
 
-					} else {
+					}
+
+					else if (watsonResponse.context.redirect) {
+
+						const dial = response.dial();
+						dial.number(watsonResponse.context.redirect);
+
+						response.say(
+							{
+								voice: "woman",
+								language: "pt-BR",
+							},
+							watsonResponse.output.text[0]
+						);
+
+						console.log(watsonResponse.context.redirect);
+					}
+					else {
 
 						winston.silly("Not a conversation finishing node.");
 
