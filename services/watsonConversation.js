@@ -5,7 +5,7 @@
  */
 
 const ConversationV1 = require("watson-developer-cloud/conversation/v1"),
-	config = require("../config/watsonService.json"),
+	config = require("../config/watsonServices.json"),
 	winston = require("../bin/logger.js");
 
 //array where the 
@@ -18,12 +18,14 @@ const conversation = new ConversationV1({
 	version_date: config.version_date
 });
 
-let workspaces = config.workspaces;
+let workspaces = require("../config/workspaces.json");
 
 function talk(text, clientId, workspace_name) {
 
 	let workspace_id = workspaces[workspace_name];
-
+	// if (!clientContextArray.hasProperty(clientId)){
+	// 	clientContextArray[clientId] = {};
+	// }
 	return new Promise((resolve, reject) => {
 		//If user input is empty, start a new conversation and store it in the client context array
 		if ("" === text) {
@@ -31,6 +33,7 @@ function talk(text, clientId, workspace_name) {
 				input: {
 					text: text
 				},
+				context: clientContextArray[clientId],
 				workspace_id: workspace_id
 			}, (err, response) => {
 
