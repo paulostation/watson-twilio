@@ -1,6 +1,6 @@
 /** 
  * This file configure the logger for the application 
- * @author Paulo Henrique <pauloh@br.ibm.com>  
+ * @author Paulo Henrique <paulostation0@gmail.com>  
  */
 
 var winston = require("winston");

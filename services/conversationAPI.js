@@ -1,7 +1,7 @@
 /** 
  * Implements the connection to conversation APIs
  * @module conversationAPI
- * @author Paulo Henrique <pauloh@br.ibm.com>  
+ * @author Paulo Henrique <paulostation0@gmail.com>  
  */
 
 var watsonConversation = require("./watsonConversation.js");
