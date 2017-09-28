@@ -1,6 +1,6 @@
 /** 
  * Implements the connection to Watson Conversation
- * @module watsonConversationController
+ * @module watsonConversation
  * @author Paulo Henrique <paulostation0@gmail.com>   
  */
 

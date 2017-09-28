@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 const winston = require("../bin/logger.js"),
-
 	fs = require("fs");
 
 let workspacesPath = require("app-root-path") + "/config/workspaces.json";
@@ -33,7 +32,7 @@ router.put("/", (req, res) => {
 			if (err) {
 				res.status(500).send(err);
 			} else {
-				
+
 				res.send("Workspace added succesfully: " + newWorkspaces);
 			}
 		});
@@ -62,7 +61,7 @@ router.patch("/", (req, res) => {
 			if (err) {
 				res.status(500).send(err);
 			} else {
-				
+
 				res.send("Workspace added succesfully: " + newWorkspaces);
 			}
 		});
@@ -73,7 +72,7 @@ router.delete("/", (req, res) => {
 
 	let workspaces = require(workspacesPath);
 
-	let workspaceName = req.body.workspaceName;	
+	let workspaceName = req.body.workspaceName;
 
 	if (!workspaces[workspaceName]) {
 
@@ -85,12 +84,12 @@ router.delete("/", (req, res) => {
 
 		let newWorkspaces = JSON.stringify(workspaces);
 
-		fs.writeFile(workspacesPath,newWorkspaces, "utf-8", err => {
+		fs.writeFile(workspacesPath, newWorkspaces, "utf-8", err => {
 
 			if (err) {
 				res.status(500).send(err);
 			} else {
-				
+
 				res.send("Workspace deleted succesfully: " + newWorkspaces);
 			}
 		});
