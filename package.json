@@ -1,7 +1,7 @@
 {
   "name": "watson-voice-chat",
   "version": "0.0.0",
-  "description": "Orquestrador de dados que transforma texto em voz e consulta o watson",
+  "description": "This Node JS app integrates Twilio voice service with Watson Conversation API.",
   "scripts": {
     "start": "node ./bin/webServer"
   },
