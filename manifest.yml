@@ -1,5 +1,5 @@
 ---
 applications:
-- name: watson-voice-chat
+- name: watson-twilio
   random-route: true
   memory: 256M

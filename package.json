@@ -8,20 +8,20 @@
   "private": false,
   "dependencies": {
     "app-root-path": "^2.0.1",
-    "binaryjs": "^0.2.1",
     "body-parser": "^1.17.2",
+    "chai": "^4.1.2",
     "cookie-parser": "^1.4.3",
     "ejs": "^2.5.7",
     "express": "latest",
     "morgan": "^1.8.2",
     "request": "^2.81.0",
-    "tunnel": "0.0.5",
     "twilio": "",
     "watson-developer-cloud": "^2.37.0",
-    "websocket": "",
-    "winston": "^2.3.1",
-    "ws": "^3.1.0",
-    "xml2js": "^0.4.17"
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
   },
   "author": "pauloh",
   "engines": {
