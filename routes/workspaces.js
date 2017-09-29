@@ -20,7 +20,8 @@ router.put("/", (req, res) => {
 
 	if (workspaces[workspaceName]) {
 
-		res.status(400).send("There isn't an already existing " + workspaceName + "workspace. To update, use PATCH method instead");
+		res.status(400).send("There is an already existing " + workspaceName + "workspace. To update, use PATCH method instead");
+
 	} else {
 
 		workspaces[workspaceName] = workspaceId;
