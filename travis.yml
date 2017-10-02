@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "6"  
+  - "app-root-path"
+  - "body-parser"
+  - "chai"
+  - "chai-http"
+  - "cookie-parser"
+  - "ejs"
+  - "express"
+  - "morgan"
+  - "request"
+  - "twilio"
+  - "watson-developer-cloud"
+  - "winston"
